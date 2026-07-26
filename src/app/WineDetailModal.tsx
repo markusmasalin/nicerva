@@ -1,5 +1,6 @@
-import { useState, type CSSProperties } from 'react'
-import { useWines, useUpdateWine, useDeleteWine, useCreateWine, WineForm } from '../features/wines'
+import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useWines, useUpdateWine, useDeleteWine, useCreateWine, uploadLabelImage, WineForm } from '../features/wines'
 import type { Wine } from '../features/wines'
 import { useCreateBottle, BottleManager } from '../features/inventory'
 import { COLORS } from '../shared/colors'
@@ -32,10 +33,32 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const [editingWine, setEditingWine] = useState<Wine | null>(null)
   const [addingVintage, setAddingVintage] = useState(false)
   const [newVintage, setNewVintage] = useState('')
+  const [uploadTargetWineId, setUploadTargetWineId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
   const updateWine = useUpdateWine()
   const deleteWine = useDeleteWine()
   const createWine = useCreateWine()
   const createBottle = useCreateBottle()
+
+  function handlePickImage(wineId: string) {
+    setUploadTargetWineId(wineId)
+    fileInputRef.current?.click()
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !uploadTargetWineId) return
+    try {
+      await uploadLabelImage(uploadTargetWineId, file)
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+    } catch {
+      alert('Kuvan lataus epäonnistui.')
+    } finally {
+      setUploadTargetWineId(null)
+    }
+  }
 
   const name = identity.name.trim().toLowerCase()
   const producer = identity.producer.trim().toLowerCase()
@@ -109,6 +132,15 @@ export function WineDetailModal({ identity, onClose }: Props) {
           ← Takaisin
         </span>
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+
         <div style={{ marginTop: '24px', marginBottom: '40px' }}>
           <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 400, color: COLORS.text }}>{first.name}</h2>
           <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
@@ -144,6 +176,20 @@ export function WineDetailModal({ identity, onClose }: Props) {
                   >
                     Poista
                   </span>
+                  {wine.labelImageUrl ? (
+                    <img
+                      src={wine.labelImageUrl}
+                      onClick={() => handlePickImage(wine.id)}
+                      style={{ width: '20px', height: '30px', objectFit: 'cover', cursor: 'pointer' }}
+                    />
+                  ) : (
+                    <span
+                      onClick={() => handlePickImage(wine.id)}
+                      style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
+                    >
+                      + Lisää kuva
+                    </span>
+                  )}
                 </div>
                 <BottleManager wineId={wine.id} />
               </>

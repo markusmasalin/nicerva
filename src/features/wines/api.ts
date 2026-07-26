@@ -73,3 +73,23 @@ export async function deleteWine(id: string): Promise<void> {
   const { error } = await supabase.from('wines').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function uploadLabelImage(wineId: string, file: File): Promise<string> {
+  const path = `${wineId}.jpg`
+
+  const { error: uploadError } = await supabase.storage
+    .from('bottle-labels')
+    .upload(path, file, { upsert: true })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('bottle-labels').getPublicUrl(path)
+  const publicUrl = data.publicUrl
+
+  const { error: updateError } = await supabase
+    .from('wines')
+    .update({ label_image_url: publicUrl })
+    .eq('id', wineId)
+  if (updateError) throw updateError
+
+  return publicUrl
+}

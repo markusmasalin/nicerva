@@ -46,6 +46,9 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
   const [wine, setWine] = useState<NewWine>(initial ?? EMPTY_WINE)
   const [grapesInput, setGrapesInput] = useState(wine.grapes.join(', '))
 
+  const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
+  const [showMoreFields, setShowMoreFields] = useState(hasHiddenFieldValue)
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     onSubmit({
@@ -57,14 +60,14 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 400 }}>
       <input
-        placeholder="Nimi"
+        placeholder="Minkä viinin löysit?"
         value={wine.name}
         onChange={(e) => setWine({ ...wine, name: e.target.value })}
         required
         style={fieldStyle}
       />
       <input
-        placeholder="Tuottaja"
+        placeholder="Kuka sen teki?"
         value={wine.producer}
         onChange={(e) => setWine({ ...wine, producer: e.target.value })}
         required
@@ -85,18 +88,6 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
         style={fieldStyle}
       />
       <input
-        placeholder="Appellation"
-        value={wine.appellation ?? ''}
-        onChange={(e) => setWine({ ...wine, appellation: e.target.value || null })}
-        style={fieldStyle}
-      />
-      <input
-        placeholder="Rypäleet (pilkulla eroteltuna)"
-        value={grapesInput}
-        onChange={(e) => setGrapesInput(e.target.value)}
-        style={fieldStyle}
-      />
-      <input
         placeholder="Vuosikerta"
         type="number"
         value={wine.vintage ?? ''}
@@ -114,15 +105,40 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
           </option>
         ))}
       </select>
-      <textarea
-        placeholder="Muistiinpanot"
-        value={wine.notes ?? ''}
-        onChange={(e) => setWine({ ...wine, notes: e.target.value || null })}
-        style={fieldStyle}
-      />
+
+      {showMoreFields ? (
+        <>
+          <input
+            placeholder="Appellation"
+            value={wine.appellation ?? ''}
+            onChange={(e) => setWine({ ...wine, appellation: e.target.value || null })}
+            style={fieldStyle}
+          />
+          <input
+            placeholder="Rypäleet (pilkulla eroteltuna)"
+            value={grapesInput}
+            onChange={(e) => setGrapesInput(e.target.value)}
+            style={fieldStyle}
+          />
+          <textarea
+            placeholder="Muistiinpanot"
+            value={wine.notes ?? ''}
+            onChange={(e) => setWine({ ...wine, notes: e.target.value || null })}
+            style={fieldStyle}
+          />
+        </>
+      ) : (
+        <span
+          onClick={() => setShowMoreFields(true)}
+          style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
+        >
+          + Lisää tarkempia tietoja
+        </span>
+      )}
+
       <div style={{ display: 'flex', gap: '12px' }}>
         <button type="submit" style={buttonStyle}>
-          Tallenna
+          {initial ? 'Tallenna' : 'Lisää kokoelmaan'}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} style={buttonStyle}>

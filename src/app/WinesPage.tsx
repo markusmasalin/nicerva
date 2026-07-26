@@ -6,6 +6,7 @@ import { COLORS } from '../shared/colors'
 import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
+import { JustAddedToast } from './JustAddedToast'
 
 // Tämä sivu on esimerkki siitä, miten wines- ja inventory-moduulit
 // yhdistetään UI:ksi. Huomaa: tämä komponentti tuo kummastakin
@@ -16,6 +17,7 @@ export function WinesPage() {
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [detailIdentity, setDetailIdentity] = useState<{ name: string; producer: string } | null>(null)
+  const [justAdded, setJustAdded] = useState<{ name: string; type: string } | null>(null)
 
   const { data: wines = [] } = useWines(filters)
   const { data: bottleCounts = {} } = useBottleCounts()
@@ -37,6 +39,8 @@ export function WinesPage() {
           status: 'cellar',
           note: null,
         })
+        setJustAdded({ name: created.name, type: created.type })
+        setTimeout(() => setJustAdded(null), 3000)
       } catch {
         alert('Viinin tai pullon luonti epäonnistui.')
       }
@@ -71,7 +75,7 @@ export function WinesPage() {
             }}
             style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
           >
-            + Lisää viini
+            + Löysin uuden viinin
           </span>
         </div>
 
@@ -97,6 +101,8 @@ export function WinesPage() {
       {detailIdentity && (
         <WineDetailModal identity={detailIdentity} onClose={() => setDetailIdentity(null)} />
       )}
+
+      {justAdded && <JustAddedToast name={justAdded.name} type={justAdded.type} />}
     </>
   )
 }

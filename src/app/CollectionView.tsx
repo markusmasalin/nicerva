@@ -1,17 +1,11 @@
+import type { CSSProperties } from 'react'
 import { useWines } from '../features/wines'
 import type { Wine, WineFilterParams } from '../features/wines'
 import { useBottleCounts, useAveragePrices } from '../features/inventory'
 import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
-
-const WINE_TYPE_COLORS: Record<string, string> = {
-  red: '#6E4247',
-  white: '#D9D3C4',
-  rose: '#C98F8F',
-  sparkling: '#B8B8A8',
-  dessert: '#A8823D',
-  fortified: '#7A4B3A',
-}
+import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
+import { BottleIcon } from '../shared/BottleIcon'
 
 type NameProducerGroup = {
   key: string
@@ -87,79 +81,72 @@ function buildCountryGroups(wines: Wine[], bottleCounts: Record<string, number>)
   return countries
 }
 
-function BottleIcon() {
+type VintageColumnProps = {
+  wine: Wine
+  bottleCounts: Record<string, number>
+  averagePrices: Record<string, number>
+}
+
+function VintageColumn({ wine, bottleCounts, averagePrices }: VintageColumnProps) {
+  const count = bottleCounts[wine.id] ?? 0
+  const bottleColor = WINE_TYPE_COLORS[wine.type] ?? COLORS.textMuted
+  const avgPrice = averagePrices[wine.id]
+
   return (
-    <svg width="9" height="18" viewBox="0 0 10 20" style={{ display: 'block' }}>
-      <rect x="3" y="0" width="4" height="5" rx="1" fill="currentColor" />
-      <rect x="0" y="5" width="10" height="15" rx="2" fill="currentColor" />
-    </svg>
+    <div style={{ width: '56px' }}>
+      {count > 8 ? (
+        <div style={{ color: bottleColor, fontSize: '15px' }}>×{count}</div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', color: bottleColor }}>
+          {Array.from({ length: count }).map((_, i) => (
+            <BottleIcon key={i} imageUrl={wine.labelImageUrl} />
+          ))}
+        </div>
+      )}
+      <div style={{ fontSize: '13px', color: COLORS.textVintage }}>{wine.vintage ?? '–'}</div>
+      {avgPrice != null && (
+        <div style={{ fontSize: '13px', color: COLORS.textPrice }}>{Math.round(avgPrice)} €</div>
+      )}
+    </div>
   )
 }
 
-type NameGroupRowProps = {
+type NameGroupBlockProps = {
   group: NameProducerGroup
   bottleCounts: Record<string, number>
   averagePrices: Record<string, number>
+  truncateName: boolean
   onOpenWine: (identity: { name: string; producer: string }) => void
 }
 
-function NameGroupRow({ group, bottleCounts, averagePrices, onOpenWine }: NameGroupRowProps) {
-  const subtitle = group.appellation || (group.grapes.length > 0 ? group.grapes.join(', ') : group.type)
+function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOpenWine }: NameGroupBlockProps) {
+  const isMultiVintage = group.wines.length > 1
 
-  const groupTotalBottles = group.wines.reduce((sum, wine) => sum + (bottleCounts[wine.id] ?? 0), 0)
-  let pricedWeightedSum = 0
-  let pricedWeightedCount = 0
-  for (const wine of group.wines) {
-    const avg = averagePrices[wine.id]
-    if (avg == null) continue
-    const count = bottleCounts[wine.id] ?? 0
-    pricedWeightedSum += avg * count
-    pricedWeightedCount += count
+  const titleStyle: CSSProperties = {
+    marginBottom: '9px',
+    ...(truncateName
+      ? { maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+      : {}),
   }
-  const averagePrice = pricedWeightedCount > 0 ? pricedWeightedSum / pricedWeightedCount : null
 
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <div>
-        <span style={{ color: COLORS.text }}>{group.name}</span>{' '}
-        <span style={{ color: COLORS.textMuted, fontSize: '0.85rem' }}>{group.producer}</span>
+    <div
+      onClick={() => onOpenWine({ name: group.name, producer: group.producer })}
+      style={{ cursor: 'pointer', width: isMultiVintage ? '100%' : undefined }}
+    >
+      <div title={`${group.name} · ${group.producer}`} style={titleStyle}>
+        <span style={{ color: COLORS.text, fontSize: '16px' }}>{group.name}</span>
+        <span style={{ color: COLORS.textMuted, fontSize: '16px' }}> · {group.producer}</span>
       </div>
-      {subtitle && (
-        <div style={{ color: COLORS.textMuted, fontSize: '0.8rem', marginBottom: '4px' }}>{subtitle}</div>
-      )}
-      {averagePrice != null && (
-        <div style={{ color: COLORS.textMuted, fontSize: '12px', marginBottom: '4px' }}>
-          {groupTotalBottles} pulloa · keskihinta {Math.round(averagePrice)} €
+      {isMultiVintage ? (
+        <div style={{ display: 'flex', gap: '23px' }}>
+          {group.wines.map((wine) => (
+            <VintageColumn key={wine.id} wine={wine} bottleCounts={bottleCounts} averagePrices={averagePrices} />
+          ))}
         </div>
+      ) : (
+        <VintageColumn wine={group.wines[0]} bottleCounts={bottleCounts} averagePrices={averagePrices} />
       )}
-      {group.wines.map((wine) => {
-        const count = bottleCounts[wine.id] ?? 0
-        const bottleColor = WINE_TYPE_COLORS[wine.type] ?? COLORS.textMuted
-        return (
-          <div
-            key={wine.id}
-            onClick={() => onOpenWine({ name: group.name, producer: group.producer })}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              padding: '2px 0',
-            }}
-          >
-            <span style={{ minWidth: '2.5em', color: COLORS.text }}>{wine.vintage ?? '–'}</span>
-            {count > 8 ? (
-              <span style={{ color: COLORS.textMuted }}>×{count} pulloa</span>
-            ) : (
-              <span style={{ display: 'flex', gap: '3px', color: bottleColor }}>
-                {Array.from({ length: count }).map((_, i) => (
-                  <BottleIcon key={i} />
-                ))}
-              </span>
-            )}
-          </div>
-        )
-      })}
     </div>
   )
 }
@@ -191,7 +178,7 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
       {countries.map((country) => (
         <div
           key={country.country}
-          style={{ position: 'relative', paddingLeft: '1rem', marginBottom: '32px' }}
+          style={{ position: 'relative', paddingLeft: '1rem', marginBottom: '37px' }}
         >
           <div
             style={{
@@ -203,12 +190,12 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
               background: COLORS.line,
             }}
           />
-          <h2 style={{ margin: '0 0 12px', fontSize: '1.1rem', fontWeight: 600 }}>{country.country}</h2>
+          <h2 style={{ margin: '0 0 14px', fontSize: '21px', fontWeight: 600 }}>{country.country}</h2>
           {(() => {
             const flagColors = COUNTRY_FLAG_COLORS[country.country.toLowerCase().trim()]
             if (!flagColors) return null
             return (
-              <div style={{ display: 'flex', height: '2px', width: '64px', marginTop: '6px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', height: '2px', width: '64px', marginTop: '7px', marginBottom: '14px' }}>
                 {flagColors.map((color, i) => (
                   <div key={i} style={{ flex: 1, background: color }} />
                 ))}
@@ -216,27 +203,37 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
             )
           })()}
           {country.regions.map((region) => (
-            <div key={region.region} style={{ marginBottom: '36px' }}>
+            <div
+              key={region.region}
+              style={{
+                marginBottom: '28px',
+                paddingBottom: '19px',
+                borderBottom: `1.5px solid ${COLORS.line}`,
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'baseline',
-                  gap: '10px',
-                  marginBottom: '28px',
+                  gap: '12px',
+                  marginBottom: '32px',
                 }}
               >
-                <span style={{ fontSize: '14px', fontWeight: 500, color: COLORS.text }}>{region.region}</span>
-                <span style={{ fontSize: '13px', color: COLORS.textMuted }}>{region.totalBottles} pulloa</span>
+                <span style={{ fontSize: '17px', fontWeight: 500, color: COLORS.text }}>{region.region}</span>
+                <span style={{ fontSize: '14px', color: COLORS.textMuted }}>{region.totalBottles} pulloa</span>
               </div>
-              {region.nameGroups.map((group) => (
-                <NameGroupRow
-                  key={group.key}
-                  group={group}
-                  bottleCounts={counts}
-                  averagePrices={prices}
-                  onOpenWine={onOpenWine}
-                />
-              ))}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '28px' }}>
+                {region.nameGroups.map((group) => (
+                  <NameGroupBlock
+                    key={group.key}
+                    group={group}
+                    bottleCounts={counts}
+                    averagePrices={prices}
+                    truncateName={region.nameGroups.length > 1}
+                    onOpenWine={onOpenWine}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
