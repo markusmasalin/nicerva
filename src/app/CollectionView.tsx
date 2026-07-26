@@ -97,7 +97,7 @@ function VintageColumn({ wine, bottleCounts, averagePrices }: VintageColumnProps
       {count > 8 ? (
         <div style={{ color: bottleColor, fontSize: '15px' }}>×{count}</div>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', color: bottleColor }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', color: bottleColor }}>
           {Array.from({ length: count }).map((_, i) => (
             <BottleIcon key={i} imageUrl={wine.labelImageUrl} />
           ))}
@@ -222,7 +222,7 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
                 <span style={{ fontSize: '17px', fontWeight: 500, color: COLORS.text }}>{region.region}</span>
                 <span style={{ fontSize: '14px', color: COLORS.textMuted }}>{region.totalBottles} pulloa</span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '28px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '36px' }}>
                 {region.nameGroups.map((group) => (
                   <NameGroupBlock
                     key={group.key}
