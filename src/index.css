@@ -1,0 +1,9 @@
+/* Värit: pidä samassa linjassa src/shared/colors.ts:n COLORS-vakion kanssa. */
+html,
+body,
+#root {
+  background: #fbfaf7;
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1f1e1b;
+}
