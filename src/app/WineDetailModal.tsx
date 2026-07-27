@@ -251,7 +251,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
                     </>
                   )}
                 </div>
-                <BottleManager wineId={wine.id} />
+                <BottleManager wineId={wine.id} editMode={editMode} />
               </>
             )}
           </div>

@@ -5,9 +5,9 @@ import { BottleList } from './BottleList'
 import type { BottleStatus } from '../types'
 import { COLORS } from '../../../shared/colors'
 
-type Props = { wineId: string }
+type Props = { wineId: string; editMode: boolean }
 
-export function BottleManager({ wineId }: Props) {
+export function BottleManager({ wineId, editMode }: Props) {
   const [showForm, setShowForm] = useState(false)
   const { data: bottles = [], isLoading } = useBottlesForWine(wineId)
   const createBottle = useCreateBottle()
@@ -61,33 +61,35 @@ export function BottleManager({ wineId }: Props) {
           onUpdateStatus={handleStatusChange}
           onUpdateField={handleFieldUpdate}
           onDelete={(id) => deleteBottle.mutate(id)}
+          editMode={editMode}
         />
       )}
-      {showForm ? (
-        <BottleForm
-          wineId={wineId}
-          onSubmit={(bottle) => {
-            createBottle.mutate(bottle)
-            setShowForm(false)
-          }}
-          onCancel={() => setShowForm(false)}
-        />
-      ) : (
-        <button
-          onClick={() => setShowForm(true)}
-          style={{
-            border: 'none',
-            background: 'transparent',
-            color: COLORS.textMuted,
-            fontSize: '13px',
-            padding: '4px 0',
-            textAlign: 'left',
-            cursor: 'pointer',
-          }}
-        >
-          + Lisää pullo
-        </button>
-      )}
+      {editMode &&
+        (showForm ? (
+          <BottleForm
+            wineId={wineId}
+            onSubmit={(bottle) => {
+              createBottle.mutate(bottle)
+              setShowForm(false)
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowForm(true)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: COLORS.textMuted,
+              fontSize: '13px',
+              padding: '4px 0',
+              textAlign: 'left',
+              cursor: 'pointer',
+            }}
+          >
+            + Lisää pullo
+          </button>
+        ))}
     </div>
   )
 }

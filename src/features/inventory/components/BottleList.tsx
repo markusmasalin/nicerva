@@ -47,9 +47,10 @@ type Props = {
     value: string | number | null,
   ) => void
   onDelete: (id: string) => void
+  editMode: boolean
 }
 
-export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete }: Props) {
+export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete, editMode }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   if (bottles.length === 0) {
@@ -59,7 +60,7 @@ export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete }:
   return (
     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
       {bottles.map((bottle) =>
-        bottle.id === editingId ? (
+        editMode && bottle.id === editingId ? (
           <li key={bottle.id} className="bottle-row" style={rowStyle}>
             <input
               type="text"
@@ -114,12 +115,16 @@ export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete }:
             <span style={{ width: '110px' }}>{bottle.purchaseDate ?? '-'}</span>
             <span style={{ width: '90px' }}>{STATUS_LABELS[bottle.status]}</span>
             <span style={{ flex: 1 }}>{bottle.note ?? ''}</span>
-            <span onClick={() => setEditingId(bottle.id)} style={linkStyle}>
-              Muokkaa
-            </span>
-            <span onClick={() => onDelete(bottle.id)} style={linkStyle}>
-              Poista
-            </span>
+            {editMode && (
+              <>
+                <span onClick={() => setEditingId(bottle.id)} style={linkStyle}>
+                  Muokkaa
+                </span>
+                <span onClick={() => onDelete(bottle.id)} style={linkStyle}>
+                  Poista
+                </span>
+              </>
+            )}
           </li>
         ),
       )}

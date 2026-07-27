@@ -94,8 +94,11 @@ function VintageColumn({ wine, bottleCounts, averagePrices }: VintageColumnProps
 
   return (
     <div style={{ width: '56px' }}>
-      {count > 8 ? (
-        <div style={{ color: bottleColor, fontSize: '15px' }}>×{count}</div>
+      {count >= 3 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: bottleColor, fontSize: '15px' }}>
+          <BottleIcon />
+          <span>×{count}</span>
+        </div>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', color: bottleColor }}>
           {Array.from({ length: count }).map((_, i) => (
