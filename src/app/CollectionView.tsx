@@ -126,6 +126,8 @@ function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOp
     ? { maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
     : {}
 
+  const subtitle = group.appellation || (group.grapes.length > 0 ? group.grapes.join(', ') : group.type)
+
   return (
     <div
       onClick={() => onOpenWine({ name: group.name, producer: group.producer })}
@@ -141,6 +143,11 @@ function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOp
         >
           {group.producer}
         </div>
+        {subtitle && (
+          <div title={subtitle} style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: '2px', ...truncateStyle }}>
+            {subtitle}
+          </div>
+        )}
       </div>
       {isMultiVintage ? (
         <div style={{ display: 'flex', gap: '23px' }}>

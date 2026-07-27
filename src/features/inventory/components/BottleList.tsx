@@ -60,7 +60,7 @@ export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete }:
     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
       {bottles.map((bottle) =>
         bottle.id === editingId ? (
-          <li key={bottle.id} style={rowStyle}>
+          <li key={bottle.id} className="bottle-row" style={rowStyle}>
             <input
               type="text"
               defaultValue={bottle.location ?? ''}
@@ -108,7 +108,7 @@ export function BottleList({ bottles, onUpdateStatus, onUpdateField, onDelete }:
             </span>
           </li>
         ) : (
-          <li key={bottle.id} style={rowStyle}>
+          <li key={bottle.id} className="bottle-row" style={rowStyle}>
             <span style={{ flex: 1, color: COLORS.text }}>{bottle.location ?? '-'}</span>
             <span style={{ width: '60px' }}>{bottle.purchasePrice != null ? `${bottle.purchasePrice} €` : '-'}</span>
             <span style={{ width: '110px' }}>{bottle.purchaseDate ?? '-'}</span>

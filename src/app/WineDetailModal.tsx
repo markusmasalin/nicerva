@@ -113,14 +113,12 @@ export function WineDetailModal({ identity, onClose }: Props) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="modal-panel"
         style={{
           background: COLORS.bg,
           color: COLORS.text,
-          maxWidth: '640px',
-          width: '90%',
           maxHeight: '85vh',
           overflowY: 'auto',
-          padding: '40px',
           borderRadius: '12px',
         }}
       >
@@ -142,6 +140,20 @@ export function WineDetailModal({ identity, onClose }: Props) {
           <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
           {subtitle && (
             <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
+          )}
+          {first.labelImageUrl ? (
+            <img
+              src={first.labelImageUrl}
+              onClick={handlePickImage}
+              style={{ width: '28px', height: '42px', objectFit: 'cover', cursor: 'pointer', marginTop: '12px' }}
+            />
+          ) : (
+            <span
+              onClick={handlePickImage}
+              style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', display: 'inline-block', marginTop: '12px', padding: '8px 4px' }}
+            >
+              + Lisää kuva
+            </span>
           )}
         </div>
 
@@ -180,20 +192,6 @@ export function WineDetailModal({ identity, onClose }: Props) {
                   >
                     Poista
                   </span>
-                  {wine.labelImageUrl ? (
-                    <img
-                      src={wine.labelImageUrl}
-                      onClick={handlePickImage}
-                      style={{ width: '20px', height: '30px', objectFit: 'cover', cursor: 'pointer' }}
-                    />
-                  ) : (
-                    <span
-                      onClick={handlePickImage}
-                      style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
-                    >
-                      + Lisää kuva
-                    </span>
-                  )}
                 </div>
                 <BottleManager wineId={wine.id} />
               </>
