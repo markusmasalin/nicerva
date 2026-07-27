@@ -16,7 +16,10 @@ export default function App() {
 
   return (
     <QueryProvider>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem 1rem' }}>
+      <div className="top-bar">
+        <span style={{ color: COLORS.text, letterSpacing: '0.05em', fontSize: '13px', fontWeight: 600 }}>
+          NICERVA
+        </span>
         <button
           onClick={() => signOut()}
           style={{

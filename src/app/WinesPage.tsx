@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCreateWine, useUpdateWine, useWines, WineForm, WineFilters } from '../features/wines'
+import { useCreateWine, useUpdateWine, useWines, uploadLabelImage, WineForm, WineFilters } from '../features/wines'
 import type { Wine, NewWine, WineFilterParams } from '../features/wines'
 import { useCreateBottle, useBottleCounts } from '../features/inventory'
 import { COLORS } from '../shared/colors'
@@ -25,9 +25,16 @@ export function WinesPage() {
   const updateWine = useUpdateWine()
   const createBottle = useCreateBottle()
 
-  async function handleSubmit(wine: NewWine) {
+  async function handleSubmit(wine: NewWine, imageFile: File | null) {
     if (editing) {
       updateWine.mutate({ id: editing.id, wine })
+      if (imageFile) {
+        try {
+          await uploadLabelImage(wine.name, wine.producer, imageFile)
+        } catch {
+          alert('Kuvan lataus epäonnistui.')
+        }
+      }
     } else {
       try {
         const created = await createWine.mutateAsync(wine)
@@ -39,6 +46,9 @@ export function WinesPage() {
           status: 'cellar',
           note: null,
         })
+        if (imageFile) {
+          await uploadLabelImage(wine.name, wine.producer, imageFile)
+        }
         setJustAdded({ name: created.name, type: created.type })
         setTimeout(() => setJustAdded(null), 3000)
       } catch {
@@ -55,7 +65,7 @@ export function WinesPage() {
 
   return (
     <>
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 20px' }}>
+      <div className="page-container">
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{ margin: 0, letterSpacing: '0.05em', color: COLORS.text }}>NICERVA</h1>
           <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>Sinun oma viinikellarisi</p>
@@ -64,7 +74,7 @@ export function WinesPage() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
           <span
             onClick={() => setShowFilters((current) => !current)}
-            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
+            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer', padding: '8px 4px' }}
           >
             Hae
           </span>
@@ -73,7 +83,7 @@ export function WinesPage() {
               setEditing(null)
               setShowForm(true)
             }}
-            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
+            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer', padding: '8px 4px' }}
           >
             + Löysin uuden viinin
           </span>

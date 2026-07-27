@@ -7,3 +7,39 @@ body,
   font-family: system-ui, -apple-system, sans-serif;
   color: #1f1e1b;
 }
+
+html,
+body {
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0.5rem 1rem;
+  background: #fbfaf7;
+}
+
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+  }
+
+  .page-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 24px 16px;
+  }
+}
