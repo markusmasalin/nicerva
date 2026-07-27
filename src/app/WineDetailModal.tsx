@@ -30,6 +30,7 @@ const vintageInputStyle: CSSProperties = {
 
 export function WineDetailModal({ identity, onClose }: Props) {
   const { data: wines = [] } = useWines()
+  const [editMode, setEditMode] = useState(false)
   const [editingWine, setEditingWine] = useState<Wine | null>(null)
   const [addingVintage, setAddingVintage] = useState(false)
   const [newVintage, setNewVintage] = useState('')
@@ -136,25 +137,78 @@ export function WineDetailModal({ identity, onClose }: Props) {
         />
 
         <div style={{ marginTop: '24px', marginBottom: '40px' }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 400, color: COLORS.text }}>{first.name}</h2>
-          <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
-          {subtitle && (
-            <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
-          )}
-          {first.labelImageUrl ? (
-            <img
-              src={first.labelImageUrl}
-              onClick={handlePickImage}
-              style={{ width: '28px', height: '42px', objectFit: 'cover', cursor: 'pointer', marginTop: '12px' }}
-            />
-          ) : (
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <span
-              onClick={handlePickImage}
-              style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', display: 'inline-block', marginTop: '12px', padding: '8px 4px' }}
+              onClick={() => setEditMode((current) => !current)}
+              style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
             >
-              + Lisää kuva
+              {editMode ? 'Valmis' : 'Muokkaa'}
             </span>
-          )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 400, color: COLORS.text }}>{first.name}</h2>
+              <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
+              {subtitle && (
+                <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
+              )}
+            </div>
+            {first.labelImageUrl ? (
+              <div style={{ flexShrink: 0 }}>
+                <img
+                  src={first.labelImageUrl}
+                  onClick={editMode ? handlePickImage : undefined}
+                  style={{
+                    width: '88px',
+                    height: '88px',
+                    objectFit: 'cover',
+                    borderRadius: '6px',
+                    cursor: editMode ? 'pointer' : 'default',
+                    display: 'block',
+                  }}
+                />
+                {editMode && (
+                  <span
+                    onClick={handlePickImage}
+                    style={{
+                      display: 'block',
+                      marginTop: '4px',
+                      fontSize: '11px',
+                      color: COLORS.textMuted,
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Vaihda kuva
+                  </span>
+                )}
+              </div>
+            ) : (
+              editMode && (
+                <span
+                  onClick={handlePickImage}
+                  style={{
+                    width: '88px',
+                    height: '88px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    color: COLORS.textMuted,
+                    cursor: 'pointer',
+                    border: `1px dashed ${COLORS.line}`,
+                    borderRadius: '6px',
+                    padding: '4px',
+                  }}
+                >
+                  + Lisää kuva
+                </span>
+              )
+            )}
+          </div>
         </div>
 
         {wineGroup.map((wine) => (
@@ -180,18 +234,22 @@ export function WineDetailModal({ identity, onClose }: Props) {
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
                   <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
-                  <span
-                    onClick={() => setEditingWine(wine)}
-                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
-                  >
-                    Muokkaa
-                  </span>
-                  <span
-                    onClick={() => deleteWine.mutate(wine.id)}
-                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
-                  >
-                    Poista
-                  </span>
+                  {editMode && (
+                    <>
+                      <span
+                        onClick={() => setEditingWine(wine)}
+                        style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
+                      >
+                        Muokkaa
+                      </span>
+                      <span
+                        onClick={() => deleteWine.mutate(wine.id)}
+                        style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
+                      >
+                        Poista
+                      </span>
+                    </>
+                  )}
                 </div>
                 <BottleManager wineId={wine.id} />
               </>

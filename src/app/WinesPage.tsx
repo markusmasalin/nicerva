@@ -71,10 +71,19 @@ export function WinesPage() {
           <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>Sinun oma viinikellarisi</p>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '16px',
+            paddingBottom: '12px',
+            marginBottom: '24px',
+            borderBottom: `1px solid ${COLORS.line}`,
+          }}
+        >
           <span
             onClick={() => setShowFilters((current) => !current)}
-            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer', padding: '8px 4px' }}
+            style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
           >
             Hae
           </span>
@@ -83,7 +92,7 @@ export function WinesPage() {
               setEditing(null)
               setShowForm(true)
             }}
-            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer', padding: '8px 4px' }}
+            style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
           >
             + Löysin uuden viinin
           </span>
