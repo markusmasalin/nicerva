@@ -74,8 +74,14 @@ export async function deleteWine(id: string): Promise<void> {
   if (error) throw error
 }
 
-export async function uploadLabelImage(wineId: string, file: File): Promise<string> {
-  const path = `${wineId}.jpg`
+export async function uploadLabelImage(name: string, producer: string, file: File): Promise<string> {
+  const trimmedName = name.trim()
+  const trimmedProducer = producer.trim()
+  const slug = `${trimmedName}-${trimmedProducer}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  const path = `${slug}.jpg`
 
   const { error: uploadError } = await supabase.storage
     .from('bottle-labels')
@@ -88,7 +94,8 @@ export async function uploadLabelImage(wineId: string, file: File): Promise<stri
   const { error: updateError } = await supabase
     .from('wines')
     .update({ label_image_url: publicUrl })
-    .eq('id', wineId)
+    .ilike('name', trimmedName)
+    .ilike('producer', trimmedProducer)
   if (updateError) throw updateError
 
   return publicUrl

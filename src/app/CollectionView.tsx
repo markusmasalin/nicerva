@@ -99,7 +99,7 @@ function VintageColumn({ wine, bottleCounts, averagePrices }: VintageColumnProps
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', color: bottleColor }}>
           {Array.from({ length: count }).map((_, i) => (
-            <BottleIcon key={i} imageUrl={wine.labelImageUrl} />
+            <BottleIcon key={i} />
           ))}
         </div>
       )}
@@ -122,21 +122,25 @@ type NameGroupBlockProps = {
 function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOpenWine }: NameGroupBlockProps) {
   const isMultiVintage = group.wines.length > 1
 
-  const titleStyle: CSSProperties = {
-    marginBottom: '9px',
-    ...(truncateName
-      ? { maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
-      : {}),
-  }
+  const truncateStyle: CSSProperties = truncateName
+    ? { maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+    : {}
 
   return (
     <div
       onClick={() => onOpenWine({ name: group.name, producer: group.producer })}
       style={{ cursor: 'pointer', width: isMultiVintage ? '100%' : undefined }}
     >
-      <div title={`${group.name} · ${group.producer}`} style={titleStyle}>
-        <span style={{ color: COLORS.text, fontSize: '16px' }}>{group.name}</span>
-        <span style={{ color: COLORS.textMuted, fontSize: '16px' }}> · {group.producer}</span>
+      <div style={{ marginBottom: '9px' }}>
+        <div title={group.name} style={{ color: COLORS.text, fontSize: '16px', ...truncateStyle }}>
+          {group.name}
+        </div>
+        <div
+          title={group.producer}
+          style={{ color: COLORS.textMuted, fontSize: '13px', marginTop: '2px', ...truncateStyle }}
+        >
+          {group.producer}
+        </div>
       </div>
       {isMultiVintage ? (
         <div style={{ display: 'flex', gap: '23px' }}>

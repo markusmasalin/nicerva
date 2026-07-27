@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FormEvent } from 'react'
+import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { NewWine, WineType } from '../types'
 import { COLORS } from '../../../shared/colors'
 
@@ -38,23 +38,33 @@ const buttonStyle: CSSProperties = {
 
 type Props = {
   initial?: NewWine
-  onSubmit: (wine: NewWine) => void
+  onSubmit: (wine: NewWine, imageFile: File | null) => void
   onCancel?: () => void
 }
 
 export function WineForm({ initial, onSubmit, onCancel }: Props) {
   const [wine, setWine] = useState<NewWine>(initial ?? EMPTY_WINE)
   const [grapesInput, setGrapesInput] = useState(wine.grapes.join(', '))
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
   const [showMoreFields, setShowMoreFields] = useState(hasHiddenFieldValue)
 
+  const previewUrl = useMemo(
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : (initial?.labelImageUrl ?? null)),
+    [selectedFile, initial?.labelImageUrl],
+  )
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    onSubmit({
-      ...wine,
-      grapes: grapesInput.split(',').map((g) => g.trim()).filter(Boolean),
-    })
+    onSubmit(
+      {
+        ...wine,
+        grapes: grapesInput.split(',').map((g) => g.trim()).filter(Boolean),
+      },
+      selectedFile,
+    )
   }
 
   return (
@@ -105,6 +115,29 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
           </option>
         ))}
       </select>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+      />
+      {previewUrl ? (
+        <img
+          src={previewUrl}
+          onClick={() => fileInputRef.current?.click()}
+          style={{ width: '32px', height: '48px', objectFit: 'cover', cursor: 'pointer' }}
+        />
+      ) : (
+        <span
+          onClick={() => fileInputRef.current?.click()}
+          style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
+        >
+          + Lisää kuva
+        </span>
+      )}
 
       {showMoreFields ? (
         <>

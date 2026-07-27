@@ -30,7 +30,7 @@ export function JustAddedToast({ name, type }: Props) {
           padding: '16px 20px',
           borderRadius: '8px',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-end',
           gap: '13px',
           fontSize: '13px',
           color: COLORS.text,

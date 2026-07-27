@@ -33,7 +33,6 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const [editingWine, setEditingWine] = useState<Wine | null>(null)
   const [addingVintage, setAddingVintage] = useState(false)
   const [newVintage, setNewVintage] = useState('')
-  const [uploadTargetWineId, setUploadTargetWineId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const updateWine = useUpdateWine()
@@ -41,22 +40,19 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const createWine = useCreateWine()
   const createBottle = useCreateBottle()
 
-  function handlePickImage(wineId: string) {
-    setUploadTargetWineId(wineId)
+  function handlePickImage() {
     fileInputRef.current?.click()
   }
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file || !uploadTargetWineId) return
+    if (!file) return
     try {
-      await uploadLabelImage(uploadTargetWineId, file)
+      await uploadLabelImage(identity.name, identity.producer, file)
       queryClient.invalidateQueries({ queryKey: ['wines'] })
     } catch {
       alert('Kuvan lataus epäonnistui.')
-    } finally {
-      setUploadTargetWineId(null)
     }
   }
 
@@ -154,8 +150,16 @@ export function WineDetailModal({ identity, onClose }: Props) {
             {editingWine?.id === wine.id ? (
               <WineForm
                 initial={wine}
-                onSubmit={(updated) => {
+                onSubmit={async (updated, imageFile) => {
                   updateWine.mutate({ id: wine.id, wine: updated })
+                  if (imageFile) {
+                    try {
+                      await uploadLabelImage(updated.name, updated.producer, imageFile)
+                      queryClient.invalidateQueries({ queryKey: ['wines'] })
+                    } catch {
+                      alert('Kuvan lataus epäonnistui.')
+                    }
+                  }
                   setEditingWine(null)
                 }}
                 onCancel={() => setEditingWine(null)}
@@ -166,25 +170,25 @@ export function WineDetailModal({ identity, onClose }: Props) {
                   <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
                   <span
                     onClick={() => setEditingWine(wine)}
-                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
+                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
                   >
                     Muokkaa
                   </span>
                   <span
                     onClick={() => deleteWine.mutate(wine.id)}
-                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
+                    style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
                   >
                     Poista
                   </span>
                   {wine.labelImageUrl ? (
                     <img
                       src={wine.labelImageUrl}
-                      onClick={() => handlePickImage(wine.id)}
+                      onClick={handlePickImage}
                       style={{ width: '20px', height: '30px', objectFit: 'cover', cursor: 'pointer' }}
                     />
                   ) : (
                     <span
-                      onClick={() => handlePickImage(wine.id)}
+                      onClick={handlePickImage}
                       style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
                     >
                       + Lisää kuva
