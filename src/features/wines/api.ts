@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import type { Wine, NewWine, WineFilterParams } from './types'
+import type { Wine, NewWine, WineFilterParams, WineType } from './types'
 
 // Nämä kaksi funktiota ovat AINOA paikka koko sovelluksessa, joka tietää
 // miten Supabasen rivimuoto (snake_case) muunnetaan sovelluksen Wine-tyypiksi.
@@ -99,4 +99,57 @@ export async function uploadLabelImage(name: string, producer: string, file: Fil
   if (updateError) throw updateError
 
   return publicUrl
+}
+
+export type IdentifiedWine = {
+  name: string | null
+  producer: string | null
+  vintage: number | null
+  country: string | null
+  region: string | null
+  appellation: string | null
+  grapes: string[] | null
+  type: WineType | null
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export type IdentifyWineResult = {
+  wine: IdentifiedWine
+  detectedText: string[]
+}
+
+// Lukee File-objektin base64-merkkijonoksi ilman "data:image/...;base64,"
+// -etuliitettä, jotta sen voi lähettää suoraan identify-wine-funktiolle.
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result.slice(result.indexOf(',') + 1))
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function identifyWine(imageFile: File): Promise<IdentifyWineResult> {
+  const image = await fileToBase64(imageFile)
+  const mediaType = imageFile.type
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/identify-wine`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ image, mediaType }),
+  })
+
+  if (!response.ok) throw new Error('Viinin tunnistus epäonnistui.')
+
+  return response.json()
 }

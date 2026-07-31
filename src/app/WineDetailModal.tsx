@@ -216,6 +216,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
             {editingWine?.id === wine.id ? (
               <WineForm
                 initial={wine}
+                isEditing
                 onSubmit={async (updated, imageFile) => {
                   updateWine.mutate({ id: wine.id, wine: updated })
                   if (imageFile) {

@@ -38,11 +38,12 @@ const buttonStyle: CSSProperties = {
 
 type Props = {
   initial?: NewWine
+  isEditing: boolean
   onSubmit: (wine: NewWine, imageFile: File | null) => void
   onCancel?: () => void
 }
 
-export function WineForm({ initial, onSubmit, onCancel }: Props) {
+export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   const [wine, setWine] = useState<NewWine>(initial ?? EMPTY_WINE)
   const [grapesInput, setGrapesInput] = useState(wine.grapes.join(', '))
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -171,7 +172,7 @@ export function WineForm({ initial, onSubmit, onCancel }: Props) {
 
       <div style={{ display: 'flex', gap: '12px' }}>
         <button type="submit" style={buttonStyle}>
-          {initial ? 'Tallenna' : 'Lisää kokoelmaan'}
+          {isEditing ? 'Tallenna' : 'Lisää kokoelmaan'}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} style={buttonStyle}>

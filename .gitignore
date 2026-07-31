@@ -26,3 +26,11 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+.supabase-token
+.anthropic-key
+supabase/.temp/
+
+# Local test artifacts from manually curling identify-wine
+wine.png
+wine_base64.txt
+payload.json
