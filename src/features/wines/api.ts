@@ -101,6 +101,33 @@ export async function uploadLabelImage(name: string, producer: string, file: Fil
   return publicUrl
 }
 
+export type WineIdentityUpdate = Pick<NewWine, 'name' | 'producer' | 'country' | 'region' | 'appellation' | 'type'>
+
+// Päivittää identiteettikentät KAIKKIIN ryhmän riveihin (name+producer-täsmäys),
+// koskematta vintage-, grapes- tai label_image_url-kenttiin.
+export async function updateWineIdentity(
+  name: string,
+  producer: string,
+  updates: WineIdentityUpdate,
+): Promise<void> {
+  const trimmedName = name.trim()
+  const trimmedProducer = producer.trim()
+
+  const { error } = await supabase
+    .from('wines')
+    .update({
+      name: updates.name,
+      producer: updates.producer,
+      country: updates.country,
+      region: updates.region,
+      appellation: updates.appellation,
+      type: updates.type,
+    })
+    .ilike('name', trimmedName)
+    .ilike('producer', trimmedProducer)
+  if (error) throw error
+}
+
 export type IdentifiedWine = {
   name: string | null
   producer: string | null

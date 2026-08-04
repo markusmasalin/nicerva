@@ -11,6 +11,7 @@ import {
 import type { Wine, NewWine, WineFilterParams, IdentifiedWine } from '../features/wines'
 import { useCreateBottle, useBottleCounts } from '../features/inventory'
 import { COLORS } from '../shared/colors'
+import { Modal } from '../shared/Modal'
 import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
@@ -189,13 +190,15 @@ export function WinesPage() {
         {showFilters && <WineFilters filters={filters} onChange={setFilters} />}
 
         {showForm && (
-          <WineForm
-            key={editing?.id ?? (scanDraft ? 'scan' : 'new')}
-            initial={editing ?? scanDraft ?? undefined}
-            isEditing={editing !== null}
-            onSubmit={handleSubmit}
-            onCancel={resetFormState}
-          />
+          <Modal title="Lisää viini" onClose={resetFormState}>
+            <WineForm
+              key={editing?.id ?? (scanDraft ? 'scan' : 'new')}
+              initial={editing ?? scanDraft ?? undefined}
+              isEditing={editing !== null}
+              onSubmit={handleSubmit}
+              onCancel={resetFormState}
+            />
+          </Modal>
         )}
 
         {countriesWithBottles.size >= 2 && <CollectionOverview wines={wines} bottleCounts={bottleCounts} />}

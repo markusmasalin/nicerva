@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { NewWine, WineType } from '../types'
 import { COLORS } from '../../../shared/colors'
+import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../../../shared/fieldStyles'
 
 const WINE_TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified']
 
@@ -15,16 +16,6 @@ const EMPTY_WINE: NewWine = {
   type: 'red',
   notes: null,
   labelImageUrl: null,
-}
-
-const fieldStyle: CSSProperties = {
-  border: 'none',
-  borderBottom: `0.5px solid ${COLORS.line}`,
-  background: 'transparent',
-  color: COLORS.text,
-  colorScheme: 'light',
-  fontSize: '14px',
-  padding: '6px 2px',
 }
 
 const buttonStyle: CSSProperties = {
@@ -69,53 +60,68 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 400 }}>
-      <input
-        placeholder="Minkä viinin löysit?"
-        value={wine.name}
-        onChange={(e) => setWine({ ...wine, name: e.target.value })}
-        required
-        style={fieldStyle}
-      />
-      <input
-        placeholder="Kuka sen teki?"
-        value={wine.producer}
-        onChange={(e) => setWine({ ...wine, producer: e.target.value })}
-        required
-        style={fieldStyle}
-      />
-      <input
-        placeholder="Maa"
-        value={wine.country}
-        onChange={(e) => setWine({ ...wine, country: e.target.value })}
-        required
-        style={fieldStyle}
-      />
-      <input
-        placeholder="Alue"
-        value={wine.region}
-        onChange={(e) => setWine({ ...wine, region: e.target.value })}
-        required
-        style={fieldStyle}
-      />
-      <input
-        placeholder="Vuosikerta"
-        type="number"
-        value={wine.vintage ?? ''}
-        onChange={(e) => setWine({ ...wine, vintage: e.target.value ? Number(e.target.value) : null })}
-        style={fieldStyle}
-      />
-      <select
-        value={wine.type}
-        onChange={(e) => setWine({ ...wine, type: e.target.value as WineType })}
-        style={{ ...fieldStyle, appearance: 'none', WebkitAppearance: 'none' }}
-      >
-        {WINE_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Nimi</div>
+        <input
+          placeholder="Minkä viinin löysit?"
+          value={wine.name}
+          onChange={(e) => setWine({ ...wine, name: e.target.value })}
+          required
+          style={FIELD_STYLE}
+        />
+      </label>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Tuottaja</div>
+        <input
+          placeholder="Kuka sen teki?"
+          value={wine.producer}
+          onChange={(e) => setWine({ ...wine, producer: e.target.value })}
+          required
+          style={FIELD_STYLE}
+        />
+      </label>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Maa</div>
+        <input
+          value={wine.country}
+          onChange={(e) => setWine({ ...wine, country: e.target.value })}
+          required
+          style={FIELD_STYLE}
+        />
+      </label>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Alue</div>
+        <input
+          value={wine.region}
+          onChange={(e) => setWine({ ...wine, region: e.target.value })}
+          required
+          style={FIELD_STYLE}
+        />
+      </label>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Vuosikerta</div>
+        <input
+          type="number"
+          value={wine.vintage ?? ''}
+          onChange={(e) => setWine({ ...wine, vintage: e.target.value ? Number(e.target.value) : null })}
+          style={FIELD_STYLE}
+        />
+      </label>
+      <label>
+        <div style={FIELD_LABEL_STYLE}>Tyyppi</div>
+        <select
+          value={wine.type}
+          onChange={(e) => setWine({ ...wine, type: e.target.value as WineType })}
+          style={{ ...FIELD_STYLE, appearance: 'none', WebkitAppearance: 'none' }}
+        >
+          {WINE_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <input
         ref={fileInputRef}
@@ -142,24 +148,31 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
 
       {showMoreFields ? (
         <>
-          <input
-            placeholder="Appellation"
-            value={wine.appellation ?? ''}
-            onChange={(e) => setWine({ ...wine, appellation: e.target.value || null })}
-            style={fieldStyle}
-          />
-          <input
-            placeholder="Rypäleet (pilkulla eroteltuna)"
-            value={grapesInput}
-            onChange={(e) => setGrapesInput(e.target.value)}
-            style={fieldStyle}
-          />
-          <textarea
-            placeholder="Muistiinpanot"
-            value={wine.notes ?? ''}
-            onChange={(e) => setWine({ ...wine, notes: e.target.value || null })}
-            style={fieldStyle}
-          />
+          <label>
+            <div style={FIELD_LABEL_STYLE}>Appellaatio</div>
+            <input
+              value={wine.appellation ?? ''}
+              onChange={(e) => setWine({ ...wine, appellation: e.target.value || null })}
+              style={FIELD_STYLE}
+            />
+          </label>
+          <label>
+            <div style={FIELD_LABEL_STYLE}>Rypäleet</div>
+            <input
+              placeholder="Pilkulla eroteltuna"
+              value={grapesInput}
+              onChange={(e) => setGrapesInput(e.target.value)}
+              style={FIELD_STYLE}
+            />
+          </label>
+          <label>
+            <div style={FIELD_LABEL_STYLE}>Muistiinpanot</div>
+            <textarea
+              value={wine.notes ?? ''}
+              onChange={(e) => setWine({ ...wine, notes: e.target.value || null })}
+              style={FIELD_STYLE}
+            />
+          </label>
         </>
       ) : (
         <span

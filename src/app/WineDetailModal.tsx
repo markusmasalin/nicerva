@@ -1,9 +1,10 @@
-import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useWines, useUpdateWine, useDeleteWine, useCreateWine, uploadLabelImage, WineForm } from '../features/wines'
+import { useState, type CSSProperties } from 'react'
+import { useWines, useDeleteWine } from '../features/wines'
 import type { Wine } from '../features/wines'
-import { useCreateBottle, BottleManager } from '../features/inventory'
+import { BottleManager } from '../features/inventory'
 import { COLORS } from '../shared/colors'
+import { WineIdentityModal } from './WineIdentityModal'
+import { VintageModal } from './VintageModal'
 
 type Identity = {
   name: string
@@ -15,47 +16,16 @@ type Props = {
   onClose: () => void
 }
 
-const linkStyle: CSSProperties = { fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }
+const linkStyle: CSSProperties = { fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }
 
-const vintageInputStyle: CSSProperties = {
-  border: 'none',
-  borderBottom: `0.5px solid ${COLORS.line}`,
-  background: 'transparent',
-  color: COLORS.text,
-  colorScheme: 'light',
-  fontSize: '14px',
-  padding: '6px 2px',
-  width: '100px',
-}
+type VintageModalState = { mode: 'edit'; wine: Wine } | { mode: 'create' } | null
 
 export function WineDetailModal({ identity, onClose }: Props) {
   const { data: wines = [] } = useWines()
   const [editMode, setEditMode] = useState(false)
-  const [editingWine, setEditingWine] = useState<Wine | null>(null)
-  const [addingVintage, setAddingVintage] = useState(false)
-  const [newVintage, setNewVintage] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const queryClient = useQueryClient()
-  const updateWine = useUpdateWine()
+  const [showIdentityModal, setShowIdentityModal] = useState(false)
+  const [vintageModal, setVintageModal] = useState<VintageModalState>(null)
   const deleteWine = useDeleteWine()
-  const createWine = useCreateWine()
-  const createBottle = useCreateBottle()
-
-  function handlePickImage() {
-    fileInputRef.current?.click()
-  }
-
-  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    try {
-      await uploadLabelImage(identity.name, identity.producer, file)
-      queryClient.invalidateQueries({ queryKey: ['wines'] })
-    } catch {
-      alert('Kuvan lataus epäonnistui.')
-    }
-  }
 
   const name = identity.name.trim().toLowerCase()
   const producer = identity.producer.trim().toLowerCase()
@@ -69,223 +39,134 @@ export function WineDetailModal({ identity, onClose }: Props) {
 
   const first = wineGroup[0]
   const subtitle = first.appellation || (first.grapes.length > 0 ? first.grapes.join(', ') : first.type)
-
-  async function handleAddVintage() {
-    try {
-      const created = await createWine.mutateAsync({
-        name: first.name,
-        producer: first.producer,
-        country: first.country,
-        region: first.region,
-        appellation: first.appellation,
-        grapes: first.grapes,
-        vintage: newVintage ? Number(newVintage) : null,
-        type: first.type,
-        notes: first.notes,
-        labelImageUrl: first.labelImageUrl,
-      })
-      await createBottle.mutateAsync({
-        wineId: created.id,
-        purchasePrice: null,
-        purchaseDate: null,
-        location: null,
-        status: 'cellar',
-        note: null,
-      })
-      setAddingVintage(false)
-      setNewVintage('')
-    } catch {
-      alert('Vuosikerran lisäys epäonnistui.')
-    }
-  }
+  // Rypäleet näytetään vain jos appellaatio on olemassa JA uusimmalla vuosikerralla
+  // on rypäleet merkitty — vanhempia vuosikertoja ei etsitä.
+  const showGrapesRow = Boolean(first.appellation) && first.grapes.length > 0
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 100,
-      }}
-    >
+    <>
       <div
-        onClick={(e) => e.stopPropagation()}
-        className="modal-panel"
+        onClick={onClose}
         style={{
-          background: COLORS.bg,
-          color: COLORS.text,
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          borderRadius: '12px',
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
         }}
       >
-        <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
-          ← Takaisin
-        </span>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="modal-panel"
+          style={{
+            background: COLORS.bg,
+            color: COLORS.text,
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            borderRadius: '12px',
+          }}
+        >
+          <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
+            ← Takaisin
+          </span>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-
-        <div style={{ marginTop: '24px', marginBottom: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <span
-              onClick={() => setEditMode((current) => !current)}
-              style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
-            >
-              {editMode ? 'Valmis' : 'Muokkaa'}
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 400, color: COLORS.text }}>{first.name}</h2>
-              <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
-              {subtitle && (
-                <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
-              )}
+          <div style={{ marginTop: '24px', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <span onClick={() => setEditMode((current) => !current)} style={linkStyle}>
+                {editMode ? 'Valmis' : 'Muokkaa'}
+              </span>
             </div>
-            {first.labelImageUrl ? (
-              <div style={{ flexShrink: 0 }}>
+
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 400, color: COLORS.text }}>{first.name}</h2>
+                <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '4px' }}>{first.producer}</div>
+                {subtitle && (
+                  <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
+                )}
+                {showGrapesRow && (
+                  <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>
+                    Rypäleet: {first.grapes.join(', ')}
+                  </div>
+                )}
+                {editMode && (
+                  <span
+                    onClick={() => setShowIdentityModal(true)}
+                    style={{ ...linkStyle, display: 'inline-block', padding: '8px 0' }}
+                  >
+                    Muokkaa
+                  </span>
+                )}
+              </div>
+              {first.labelImageUrl && (
                 <img
                   src={first.labelImageUrl}
-                  onClick={editMode ? handlePickImage : undefined}
                   style={{
                     width: '88px',
                     height: '88px',
                     objectFit: 'cover',
                     borderRadius: '6px',
-                    cursor: editMode ? 'pointer' : 'default',
+                    flexShrink: 0,
                     display: 'block',
                   }}
                 />
+              )}
+            </div>
+          </div>
+
+          {wineGroup.map((wine) => (
+            <div key={wine.id} style={{ marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
                 {editMode && (
-                  <span
-                    onClick={handlePickImage}
-                    style={{
-                      display: 'block',
-                      marginTop: '4px',
-                      fontSize: '11px',
-                      color: COLORS.textMuted,
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Vaihda kuva
-                  </span>
+                  <>
+                    <span onClick={() => setVintageModal({ mode: 'edit', wine })} style={linkStyle}>
+                      Muokkaa
+                    </span>
+                    <span onClick={() => deleteWine.mutate(wine.id)} style={linkStyle}>
+                      Poista
+                    </span>
+                  </>
                 )}
               </div>
-            ) : (
-              editMode && (
-                <span
-                  onClick={handlePickImage}
-                  style={{
-                    width: '88px',
-                    height: '88px',
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    color: COLORS.textMuted,
-                    cursor: 'pointer',
-                    border: `1px dashed ${COLORS.line}`,
-                    borderRadius: '6px',
-                    padding: '4px',
-                  }}
-                >
-                  + Lisää kuva
-                </span>
-              )
-            )}
-          </div>
+              <BottleManager wineId={wine.id} editMode={editMode} />
+            </div>
+          ))}
+
+          {editMode && (
+            <span onClick={() => setVintageModal({ mode: 'create' })} style={linkStyle}>
+              + Lisää vuosikerta
+            </span>
+          )}
         </div>
-
-        {wineGroup.map((wine) => (
-          <div key={wine.id} style={{ marginBottom: '40px' }}>
-            {editingWine?.id === wine.id ? (
-              <WineForm
-                initial={wine}
-                isEditing
-                onSubmit={async (updated, imageFile) => {
-                  updateWine.mutate({ id: wine.id, wine: updated })
-                  if (imageFile) {
-                    try {
-                      await uploadLabelImage(updated.name, updated.producer, imageFile)
-                      queryClient.invalidateQueries({ queryKey: ['wines'] })
-                    } catch {
-                      alert('Kuvan lataus epäonnistui.')
-                    }
-                  }
-                  setEditingWine(null)
-                }}
-                onCancel={() => setEditingWine(null)}
-              />
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
-                  <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
-                  {editMode && (
-                    <>
-                      <span
-                        onClick={() => setEditingWine(wine)}
-                        style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
-                      >
-                        Muokkaa
-                      </span>
-                      <span
-                        onClick={() => deleteWine.mutate(wine.id)}
-                        style={{ fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer', padding: '8px 4px' }}
-                      >
-                        Poista
-                      </span>
-                    </>
-                  )}
-                </div>
-                <BottleManager wineId={wine.id} editMode={editMode} />
-              </>
-            )}
-          </div>
-        ))}
-
-        {addingVintage ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <input
-              type="number"
-              placeholder="Vuosikerta"
-              value={newVintage}
-              onChange={(e) => setNewVintage(e.target.value)}
-              style={vintageInputStyle}
-            />
-            <span onClick={handleAddVintage} style={linkStyle}>
-              Tallenna
-            </span>
-            <span
-              onClick={() => {
-                setAddingVintage(false)
-                setNewVintage('')
-              }}
-              style={linkStyle}
-            >
-              Peruuta
-            </span>
-          </div>
-        ) : (
-          <span onClick={() => setAddingVintage(true)} style={linkStyle}>
-            + Lisää vuosikerta
-          </span>
-        )}
       </div>
-    </div>
+
+      {showIdentityModal && (
+        <WineIdentityModal
+          identity={identity}
+          initialValues={{
+            name: first.name,
+            producer: first.producer,
+            country: first.country,
+            region: first.region,
+            appellation: first.appellation,
+            type: first.type,
+            labelImageUrl: first.labelImageUrl,
+          }}
+          onClose={() => setShowIdentityModal(false)}
+        />
+      )}
+
+      {vintageModal && (
+        <VintageModal
+          mode={vintageModal.mode}
+          wine={vintageModal.mode === 'edit' ? vintageModal.wine : undefined}
+          groupTemplate={first}
+          onClose={() => setVintageModal(null)}
+        />
+      )}
+    </>
   )
 }
