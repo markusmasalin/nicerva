@@ -8,13 +8,14 @@ import {
   WineForm,
   WineFilters,
 } from '../features/wines'
-import type { Wine, NewWine, WineFilterParams, IdentifiedWine } from '../features/wines'
+import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo } from '../features/wines'
 import { useCreateBottle, useBottleCounts } from '../features/inventory'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
 import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
+import { DuplicateBottleModal } from './DuplicateBottleModal'
 import { JustAddedToast } from './JustAddedToast'
 
 const SCANNED_WINE_DEFAULTS: NewWine = {
@@ -55,6 +56,7 @@ export function WinesPage() {
   const [scanDraft, setScanDraft] = useState<NewWine | null>(null)
   const [scannedImageFile, setScannedImageFile] = useState<File | null>(null)
   const [scanning, setScanning] = useState(false)
+  const [duplicateMatch, setDuplicateMatch] = useState<Wine | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [detailIdentity, setDetailIdentity] = useState<{ name: string; producer: string } | null>(null)
@@ -80,9 +82,24 @@ export function WinesPage() {
     if (!file) return
 
     setScanning(true)
+    let matchedWine: Wine | null = null
     try {
       const result = await identifyWine(file)
-      setScanDraft(toScannedDraft(result.wine))
+      const identifiedName = (result.wine.name ?? '').trim().toLowerCase()
+      const identifiedProducer = (result.wine.producer ?? '').trim().toLowerCase()
+      matchedWine =
+        (identifiedName &&
+          identifiedProducer &&
+          wines.find(
+            (wine) =>
+              wine.name.trim().toLowerCase() === identifiedName &&
+              wine.producer.trim().toLowerCase() === identifiedProducer,
+          )) ||
+        null
+
+      if (!matchedWine) {
+        setScanDraft(toScannedDraft(result.wine))
+      }
     } catch {
       // Hiljainen fallback: lomake avataan tyhjänä, otettu kuva tallennetaan silti.
       setScanDraft(null)
@@ -90,11 +107,15 @@ export function WinesPage() {
       setScanning(false)
       setScannedImageFile(file)
       setEditing(null)
-      setShowForm(true)
+      if (matchedWine) {
+        setDuplicateMatch(matchedWine)
+      } else {
+        setShowForm(true)
+      }
     }
   }
 
-  async function handleSubmit(wine: NewWine, imageFile: File | null) {
+  async function handleSubmit(wine: NewWine, imageFile: File | null, purchaseInfo: PurchaseInfo) {
     const fileToUpload = imageFile ?? scannedImageFile
     if (editing) {
       updateWine.mutate({ id: editing.id, wine })
@@ -110,8 +131,8 @@ export function WinesPage() {
         const created = await createWine.mutateAsync(wine)
         await createBottle.mutateAsync({
           wineId: created.id,
-          purchasePrice: null,
-          purchaseDate: null,
+          purchasePrice: purchaseInfo.purchasePrice,
+          purchaseDate: purchaseInfo.purchaseDate,
           location: null,
           status: 'cellar',
           note: null,
@@ -160,6 +181,7 @@ export function WinesPage() {
             onClick={() => {
               setScanDraft(null)
               setScannedImageFile(null)
+              setDuplicateMatch(null)
               setEditing(null)
               setShowForm(true)
             }}
@@ -208,6 +230,17 @@ export function WinesPage() {
 
       {detailIdentity && (
         <WineDetailModal identity={detailIdentity} onClose={() => setDetailIdentity(null)} />
+      )}
+
+      {duplicateMatch && (
+        <DuplicateBottleModal
+          matchedWine={duplicateMatch}
+          onClose={() => setDuplicateMatch(null)}
+          onCreated={() => {
+            setJustAdded({ name: duplicateMatch.name, type: duplicateMatch.type })
+            setTimeout(() => setJustAdded(null), 3000)
+          }}
+        />
       )}
 
       {justAdded && <JustAddedToast name={justAdded.name} type={justAdded.type} />}

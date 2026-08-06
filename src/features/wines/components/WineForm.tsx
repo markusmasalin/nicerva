@@ -27,10 +27,15 @@ const buttonStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
+export type PurchaseInfo = {
+  purchasePrice: number | null
+  purchaseDate: string | null
+}
+
 type Props = {
   initial?: NewWine
   isEditing: boolean
-  onSubmit: (wine: NewWine, imageFile: File | null) => void
+  onSubmit: (wine: NewWine, imageFile: File | null, purchaseInfo: PurchaseInfo) => void
   onCancel?: () => void
 }
 
@@ -38,6 +43,8 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   const [wine, setWine] = useState<NewWine>(initial ?? EMPTY_WINE)
   const [grapesInput, setGrapesInput] = useState(wine.grapes.join(', '))
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [purchasePrice, setPurchasePrice] = useState('')
+  const [purchaseDate, setPurchaseDate] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
@@ -56,8 +63,16 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         grapes: grapesInput.split(',').map((g) => g.trim()).filter(Boolean),
       },
       selectedFile,
+      {
+        purchasePrice: purchasePrice ? Number(purchasePrice) : null,
+        purchaseDate: purchaseDate || null,
+      },
     )
   }
+
+  const grapesSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+    `${wine.name} ${wine.producer} ${wine.vintage ?? ''} rypäleet`,
+  )}`
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -157,7 +172,19 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
             />
           </label>
           <label>
-            <div style={FIELD_LABEL_STYLE}>Rypäleet</div>
+            <div style={{ ...FIELD_LABEL_STYLE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Rypäleet</span>
+              {wine.name.trim() !== '' && (
+                <a
+                  href={grapesSearchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: COLORS.textMuted, fontSize: '13px' }}
+                >
+                  Etsi verkosta
+                </a>
+              )}
+            </div>
             <input
               placeholder="Pilkulla eroteltuna"
               value={grapesInput}
@@ -165,6 +192,29 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
               style={FIELD_STYLE}
             />
           </label>
+          {!isEditing && (
+            <>
+              <label>
+                <div style={FIELD_LABEL_STYLE}>Ostohinta €</div>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  style={FIELD_STYLE}
+                />
+              </label>
+              <label>
+                <div style={FIELD_LABEL_STYLE}>Ostopäivä</div>
+                <input
+                  type="date"
+                  value={purchaseDate}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  style={FIELD_STYLE}
+                />
+              </label>
+            </>
+          )}
           <label>
             <div style={FIELD_LABEL_STYLE}>Muistiinpanot</div>
             <textarea
