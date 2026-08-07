@@ -71,7 +71,7 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   }
 
   const grapesSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-    `${wine.name} ${wine.producer} ${wine.vintage ?? ''} rypäleet`,
+    `${wine.name} ${wine.producer} ${wine.vintage ?? ''} grapes`,
   )}`
 
   return (

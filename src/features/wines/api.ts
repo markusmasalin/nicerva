@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { findKnownAppellation } from '../../shared/matchAppellation'
 import type { Wine, NewWine, WineFilterParams, WineType } from './types'
 
 // Nämä kaksi funktiota ovat AINOA paikka koko sovelluksessa, joka tietää
@@ -159,9 +160,15 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
-export async function identifyWine(imageFile: File): Promise<IdentifyWineResult> {
-  const image = await fileToBase64(imageFile)
-  const mediaType = imageFile.type
+export async function identifyWine(frontImage: File, backImage?: File): Promise<IdentifyWineResult> {
+  const image = await fileToBase64(frontImage)
+  const mediaType = frontImage.type
+
+  const payload: Record<string, string> = { image, mediaType }
+  if (backImage) {
+    payload.backImage = await fileToBase64(backImage)
+    payload.backMediaType = backImage.type
+  }
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -173,10 +180,30 @@ export async function identifyWine(imageFile: File): Promise<IdentifyWineResult>
       Authorization: `Bearer ${supabaseAnonKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ image, mediaType }),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) throw new Error('Viinin tunnistus epäonnistui.')
 
-  return response.json()
+  const result: IdentifyWineResult = await response.json()
+  return applyKnownAppellation(result)
+}
+
+// Tunnetun appellaatiolistan osuma on luotettavampi kuin LLM:n oma arvaus
+// (oikea kirjoitusasu, ei mahdollisia LLM:n pieniä kirjoitusvirheitä), joten
+// se korvaa appellation-kentän aina kun osuma löytyy. country/region
+// täytetään osumasta vain jos ne olivat vielä tyhjiä.
+function applyKnownAppellation(result: IdentifyWineResult): IdentifyWineResult {
+  const match = findKnownAppellation(result.detectedText)
+  if (!match) return result
+
+  return {
+    ...result,
+    wine: {
+      ...result.wine,
+      appellation: match.name,
+      country: result.wine.country ?? match.country,
+      region: result.wine.region ?? match.region,
+    },
+  }
 }

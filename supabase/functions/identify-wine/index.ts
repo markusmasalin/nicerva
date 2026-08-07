@@ -21,6 +21,8 @@ const CORS_HEADERS = {
 
 const PROMPT = `You are looking at a photo of a wine label. Extract as much information as you can about the wine and every piece of text visible on the label.
 
+You may receive one or two images: the front label and optionally the back label of the same wine bottle. Combine information from both — the back label often contains the vintage or grape composition when the front doesn't.
+
 Return exactly this JSON structure and nothing else:
 
 {
@@ -47,6 +49,8 @@ Return ONLY valid JSON. Do not wrap the response in markdown. Do not include exp
 interface IdentifyWineRequestBody {
   image?: unknown;
   mediaType?: unknown;
+  backImage?: unknown;
+  backMediaType?: unknown;
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -54,6 +58,10 @@ function jsonResponse(body: unknown, status: number): Response {
     status,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
 }
 
 function stripJsonFences(text: string): string {
@@ -78,19 +86,45 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Request body must be valid JSON." }, 400);
   }
 
-  const { image, mediaType } = body;
+  const { image, mediaType, backImage, backMediaType } = body;
 
-  if (typeof image !== "string" || image.length === 0) {
+  if (!isNonEmptyString(image)) {
     return jsonResponse({ error: "Missing or empty required field: image." }, 400);
   }
 
-  if (typeof mediaType !== "string" || mediaType.length === 0) {
+  if (!isNonEmptyString(mediaType)) {
     return jsonResponse({ error: "Missing or empty required field: mediaType." }, 400);
   }
 
   if (image.length > MAX_IMAGE_BASE64_LENGTH) {
     return jsonResponse({ error: "image is too large. Maximum size is ~10MB." }, 400);
   }
+
+  const content: Array<Record<string, unknown>> = [
+    {
+      type: "image",
+      source: { type: "base64", media_type: mediaType, data: image },
+    },
+  ];
+
+  const backImageProvided = backImage !== undefined || backMediaType !== undefined;
+  if (backImageProvided) {
+    if (!isNonEmptyString(backImage)) {
+      return jsonResponse({ error: "backImage must be a non-empty string when provided." }, 400);
+    }
+    if (!isNonEmptyString(backMediaType)) {
+      return jsonResponse({ error: "backMediaType must be a non-empty string when provided." }, 400);
+    }
+    if (backImage.length > MAX_IMAGE_BASE64_LENGTH) {
+      return jsonResponse({ error: "backImage is too large. Maximum size is ~10MB." }, 400);
+    }
+    content.push({
+      type: "image",
+      source: { type: "base64", media_type: backMediaType, data: backImage },
+    });
+  }
+
+  content.push({ type: "text", text: PROMPT });
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
@@ -114,20 +148,7 @@ Deno.serve(async (req: Request) => {
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType,
-                  data: image,
-                },
-              },
-              {
-                type: "text",
-                text: PROMPT,
-              },
-            ],
+            content,
           },
         ],
       }),
