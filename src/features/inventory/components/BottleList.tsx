@@ -27,9 +27,10 @@ type Props = {
   bottles: Bottle[]
   editMode: boolean
   onEdit: (bottle: Bottle) => void
+  onOpenBottle: (bottle: Bottle) => void
 }
 
-export function BottleList({ bottles, editMode, onEdit }: Props) {
+export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
   if (bottles.length === 0) {
     return <p>Ei vielä pulloja tälle viinille.</p>
   }
@@ -43,6 +44,11 @@ export function BottleList({ bottles, editMode, onEdit }: Props) {
           <span style={{ width: '110px' }}>{bottle.purchaseDate ?? '-'}</span>
           <span style={{ width: '90px' }}>{STATUS_LABELS[bottle.status]}</span>
           <span style={{ flex: 1 }}>{bottle.note ?? ''}</span>
+          {bottle.status === 'cellar' && (
+            <span onClick={() => onOpenBottle(bottle)} style={linkStyle}>
+              🍾 Avaa pullo
+            </span>
+          )}
           {editMode && (
             <span onClick={() => onEdit(bottle)} style={linkStyle}>
               Muokkaa

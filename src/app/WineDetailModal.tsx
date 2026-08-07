@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { useWines, useDeleteWine } from '../features/wines'
 import type { Wine } from '../features/wines'
 import { BottleManager } from '../features/inventory'
+import { useAverageRatingsByWine, useGroupAverageRating } from '../features/tastings'
 import { COLORS } from '../shared/colors'
 import { WineIdentityModal } from './WineIdentityModal'
 import { VintageModal } from './VintageModal'
@@ -32,6 +33,9 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const wineGroup = wines
     .filter((wine) => wine.name.trim().toLowerCase() === name && wine.producer.trim().toLowerCase() === producer)
     .sort((a, b) => (b.vintage ?? -Infinity) - (a.vintage ?? -Infinity))
+
+  const { data: averageRatings = {} } = useAverageRatingsByWine()
+  const { data: groupAverageRating } = useGroupAverageRating(wineGroup.map((wine) => wine.id))
 
   if (wineGroup.length === 0) {
     return null
@@ -91,6 +95,11 @@ export function WineDetailModal({ identity, onClose }: Props) {
                     Rypäleet: {first.grapes.join(', ')}
                   </div>
                 )}
+                {groupAverageRating != null && (
+                  <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>
+                    ⭐ {groupAverageRating.toFixed(1)}
+                  </div>
+                )}
                 {editMode && (
                   <span
                     onClick={() => setShowIdentityModal(true)}
@@ -120,6 +129,11 @@ export function WineDetailModal({ identity, onClose }: Props) {
             <div key={wine.id} style={{ marginBottom: '40px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
                 <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
+                {averageRatings[wine.id] != null && (
+                  <span style={{ color: COLORS.textMuted, fontSize: '0.85rem' }}>
+                    ⭐ {averageRatings[wine.id].toFixed(1)}
+                  </span>
+                )}
                 {editMode && (
                   <>
                     <span onClick={() => setVintageModal({ mode: 'edit', wine })} style={linkStyle}>
