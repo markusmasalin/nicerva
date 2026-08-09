@@ -22,6 +22,11 @@ export function CountryPicker({ value, onChange, allowEmpty, required, style }: 
       style={style ?? FIELD_STYLE}
     >
       {allowEmpty && <option value="">—</option>}
+      {!allowEmpty && !value && (
+        <option value="" disabled>
+          —
+        </option>
+      )}
       {codes.map((code) => (
         <option key={code} value={code}>
           {getCountryName(code, language)}
