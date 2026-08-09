@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { NewWine, WineType } from '../types'
-import { searchProducers, createProducer } from '../../producers'
+import { searchProducers } from '../../producers'
 import type { Producer } from '../../producers'
 import { COLORS } from '../../../shared/colors'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../../../shared/fieldStyles'
@@ -66,7 +66,6 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   const [producerSuggestions, setProducerSuggestions] = useState<Producer[]>([])
   const [producerSearchComplete, setProducerSearchComplete] = useState(false)
   const [suppressProducerSuggestions, setSuppressProducerSuggestions] = useState(false)
-  const [addingProducer, setAddingProducer] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
@@ -116,25 +115,12 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
     setProducerSuggestions([])
   }
 
-  async function handleAddNewProducer() {
-    if (addingProducer) return
-    const name = wine.producer.trim()
-    if (!name) return
-    setAddingProducer(true)
-    try {
-      const created = await createProducer({
-        name,
-        country: wine.country.trim() || null,
-        region: wine.region.trim() || null,
-      })
-      // Näytetään heti vahvistuksena valittavana ehdotuksena "+ Lisää uutena" -linkin sijaan.
-      setProducerSuggestions([created])
-      setProducerSearchComplete(true)
-    } catch {
-      alert('Tuottajan lisäys epäonnistui.')
-    } finally {
-      setAddingProducer(false)
-    }
+  // Ei enää kirjoita tietokantaan tässä kohtaa — tuottajan olemassaolo
+  // tarkistetaan/luodaan vasta lomakkeen lopullisessa lähetyksessä
+  // (ks. ensureProducer-kutsu WinesPage.tsx:n handleSubmitissa).
+  function handleAddNewProducer() {
+    setSuppressProducerSuggestions(true)
+    setProducerSuggestions([])
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -229,16 +215,9 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         wine.producer.trim().length >= 2 && (
           <span
             onClick={handleAddNewProducer}
-            style={{
-              color: COLORS.textMuted,
-              fontSize: '13px',
-              cursor: addingProducer ? 'default' : 'pointer',
-              opacity: addingProducer ? 0.6 : 1,
-            }}
+            style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
           >
-            {addingProducer
-              ? t('common_adding')
-              : t('producer_add_new').replace('{name}', wine.producer.trim())}
+            {t('producer_add_new').replace('{name}', wine.producer.trim())}
           </span>
         )}
       <label>

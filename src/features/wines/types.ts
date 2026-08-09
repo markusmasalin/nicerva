@@ -28,6 +28,7 @@ export type WineFilterParams = {
   search?: string
   country?: string
   region?: string
+  appellation?: string
   grape?: string
   vintage?: number
 }

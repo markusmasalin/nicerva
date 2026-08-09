@@ -10,6 +10,7 @@ import {
 } from '../features/wines'
 import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo } from '../features/wines'
 import { useCreateBottle, useBottleCounts } from '../features/inventory'
+import { ensureProducer } from '../features/producers'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
 import { similarity } from '../shared/textSimilarity'
@@ -204,6 +205,7 @@ export function WinesPage() {
     } else {
       try {
         const created = await createWine.mutateAsync(wine)
+        await ensureProducer(wine.producer, wine.country, wine.region)
         await createBottle.mutateAsync({
           wineId: created.id,
           purchasePrice: purchaseInfo.purchasePrice,
@@ -290,7 +292,7 @@ export function WinesPage() {
         {showFilters && <WineFilters filters={filters} onChange={setFilters} />}
 
         {showForm && (
-          <Modal title="Lisää viini" onClose={resetFormState}>
+          <Modal title={t('wine_add_modal_title')} onClose={resetFormState}>
             <WineForm
               key={editing?.id ?? (scanDraft ? 'scan' : 'new')}
               initial={editing ?? scanDraft ?? undefined}

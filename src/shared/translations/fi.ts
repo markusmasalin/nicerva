@@ -50,6 +50,7 @@ export const fi = {
   wine_more_details_link: '+ Lisää tarkempia tietoja',
   wine_search_online_link: 'Etsi verkosta',
   wine_save_new: 'Lisää kokoelmaan',
+  wine_add_modal_title: 'Lisää viini',
 
   wine_type_red: 'Punainen',
   wine_type_white: 'Valkoinen',

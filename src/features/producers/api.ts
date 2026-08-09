@@ -42,36 +42,49 @@ export async function createProducer(input: {
   return toProducer(data)
 }
 
+// Varmistaa että tuottaja on olemassa jaetussa taulussa, kutsutaan
+// vasta viinilomakkeen lopullisessa lähetyksessä (ei enää heti
+// "+ Lisää uutena tuottajana" -linkin klikkauksesta). Yksi atominen
+// upsert normalized_name:n perusteella — jos rivi on jo olemassa
+// (esim. toinen käyttäjä ehti juuri samaan aikaan), ignoreDuplicates
+// jättää sen koskemattomaksi eikä tästä synny virhettä eikä
+// kilpa-ajotilannetta erillisen tarkistus+insert-parin sijaan.
+export async function ensureProducer(name: string, country: string, region: string): Promise<void> {
+  const trimmedName = name.trim()
+
+  const { error } = await supabase.from('producers').upsert(
+    {
+      name: trimmedName,
+      normalized_name: normalizeText(trimmedName),
+      aliases: [],
+      country,
+      region,
+    },
+    { onConflict: 'normalized_name', ignoreDuplicates: true },
+  )
+  if (error) throw error
+}
+
 const SEARCH_LIMIT = 8
 
-// Kaksi erillistä hakua: ilike name-kenttään, ja ilike aliases-taulukon
-// tekstimuotoon (jotta osuma löytyy vaikka query täsmäisi vain osan
-// aliaksesta, ei koko alkiota). Yhdistetään, poistetaan duplikaatit
-// id:n perusteella, järjestetään nimen mukaan ja rajataan tulosmäärä.
+// Hakee kaikki tuottajat ja suodattaa selaimessa nimen/aliasten mukaan.
+// Korvaa aiemman aliases::text-ilike-kyselyn, joka nojasi hauraaseen
+// PostgREST-cast-syntaksiin. ~430 tuottajan kokoluokassa tämä on
+// yksinkertaisempi ja luotettavampi kuin kaksi erillistä DB-kyselyä.
 export async function searchProducers(query: string): Promise<Producer[]> {
-  const trimmed = query.trim()
+  const trimmed = query.trim().toLowerCase()
   if (trimmed.length === 0) return []
 
-  const [byName, byAlias] = await Promise.all([
-    supabase.from('producers').select('*').ilike('name', `%${trimmed}%`).order('name').limit(SEARCH_LIMIT),
-    supabase
-      .from('producers')
-      .select('*')
-      .filter('aliases::text', 'ilike', `%${trimmed}%`)
-      .order('name')
-      .limit(SEARCH_LIMIT),
-  ])
+  const { data, error } = await supabase.from('producers').select('*').order('name')
+  if (error) throw error
 
-  if (byName.error) throw byName.error
-  if (byAlias.error) throw byAlias.error
+  const matches = (data ?? [])
+    .map(toProducer)
+    .filter(
+      (p) =>
+        p.name.toLowerCase().includes(trimmed) ||
+        p.aliases.some((alias) => alias.toLowerCase().includes(trimmed)),
+    )
 
-  const merged = new Map<string, Producer>()
-  for (const row of [...(byName.data ?? []), ...(byAlias.data ?? [])]) {
-    const producer = toProducer(row)
-    merged.set(producer.id, producer)
-  }
-
-  return Array.from(merged.values())
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .slice(0, SEARCH_LIMIT)
+  return matches.slice(0, SEARCH_LIMIT)
 }

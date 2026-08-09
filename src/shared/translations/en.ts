@@ -50,6 +50,7 @@ export const en = {
   wine_more_details_link: '+ Add more details',
   wine_search_online_link: 'Search online',
   wine_save_new: 'Add to collection',
+  wine_add_modal_title: 'Add wine',
 
   wine_type_red: 'Red',
   wine_type_white: 'White',

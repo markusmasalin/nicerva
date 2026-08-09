@@ -47,6 +47,12 @@ export function WineFilters({ filters, onChange }: Props) {
         style={fieldStyle}
       />
       <input
+        placeholder={t('wine_appellation_placeholder')}
+        value={filters.appellation ?? ''}
+        onChange={(e) => updateText('appellation', e.target.value)}
+        style={fieldStyle}
+      />
+      <input
         placeholder={t('filters_grape_placeholder')}
         value={filters.grape ?? ''}
         onChange={(e) => updateText('grape', e.target.value)}

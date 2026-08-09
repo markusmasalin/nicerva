@@ -50,6 +50,7 @@ export const it = {
   wine_more_details_link: '+ Aggiungi dettagli',
   wine_search_online_link: 'Cerca online',
   wine_save_new: 'Aggiungi alla collezione',
+  wine_add_modal_title: 'Aggiungi vino',
 
   wine_type_red: 'Rosso',
   wine_type_white: 'Bianco',

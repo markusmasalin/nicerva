@@ -13,7 +13,9 @@ type Props = {
 
 export function CountryPicker({ value, onChange, allowEmpty, required, style }: Props) {
   const language = useLanguage()
-  const codes = Object.keys(COUNTRIES)
+  const codes = Object.keys(COUNTRIES).sort((a, b) =>
+    getCountryName(a, language).localeCompare(getCountryName(b, language)),
+  )
   return (
     <select
       value={value ?? ''}

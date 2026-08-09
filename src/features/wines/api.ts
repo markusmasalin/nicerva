@@ -45,6 +45,7 @@ export async function getWines(filters: WineFilterParams = {}): Promise<Wine[]> 
 
   if (filters.country) query = query.ilike('country', `%${filters.country}%`)
   if (filters.region) query = query.ilike('region', `%${filters.region}%`)
+  if (filters.appellation) query = query.ilike('appellation', `%${filters.appellation}%`)
   if (filters.vintage) query = query.eq('vintage', filters.vintage)
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
 
