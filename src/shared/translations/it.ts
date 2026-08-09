@@ -84,6 +84,8 @@ export const it = {
   bottle_modal_create_title: 'Aggiungi bottiglia',
   bottle_location_label: 'Posizione',
   bottle_note_label: 'Nota',
+  bottle_open_link: 'Apri bottiglia',
+  bottle_empty_state: 'Ancora nessuna bottiglia',
 
   tasting_loading_title: 'Degustazione',
   tasting_saved_message: 'La tua valutazione è stata salvata.',
@@ -97,4 +99,14 @@ export const it = {
   tasting_custom_food_placeholder: 'Scrivi il tuo...',
   tasting_notes_placeholder: 'Altri pensieri?',
   tasting_skip_link: 'Salta, segna solo come consumata',
+
+  identity_modal_title: 'Modifica vino',
+
+  duplicate_modal_title: 'Già nella tua collezione',
+  duplicate_modal_body: '{name} ({producer}) è già nella tua collezione.',
+
+  confirm_delete_wine: 'Eliminare questo vino?',
+  confirm_delete_vintage: 'Eliminare questa annata?',
+  confirm_delete_bottle: 'Eliminare questa bottiglia?',
+  confirm_delete_tasting: 'Eliminare questa degustazione?',
 }

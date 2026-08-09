@@ -49,13 +49,13 @@ export function DuplicateBottleModal({ matchedWine, onClose, onCreated }: Props)
   }
 
   return (
-    <Modal title="Löytyi jo kokoelmastasi" onClose={onClose}>
+    <Modal title={t('duplicate_modal_title')} onClose={onClose}>
       <p style={{ color: COLORS.textMuted, fontSize: '14px', marginTop: 0 }}>
-        {matchedWine.name} ({matchedWine.producer}) on jo kokoelmassasi.
+        {t('duplicate_modal_body').replace('{name}', matchedWine.name).replace('{producer}', matchedWine.producer)}
       </p>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Ostohinta €</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_purchase_price_label')}</div>
           <input
             type="number"
             step="0.01"
@@ -65,7 +65,7 @@ export function DuplicateBottleModal({ matchedWine, onClose, onCreated }: Props)
           />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Ostopäivä</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_purchase_date_label')}</div>
           <input
             type="date"
             value={purchaseDate}
@@ -76,10 +76,10 @@ export function DuplicateBottleModal({ matchedWine, onClose, onCreated }: Props)
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
-            {saving ? t('common_adding') : 'Lisää pullo'}
+            {saving ? t('common_adding') : t('bottle_add_link')}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
-            Peruuta
+            {t('common_cancel')}
           </button>
         </div>
       </form>

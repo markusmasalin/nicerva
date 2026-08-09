@@ -6,8 +6,18 @@ import { Modal } from '../shared/Modal'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../shared/fieldStyles'
 import { COLORS } from '../shared/colors'
 import { useTranslation } from './LanguageContext'
+import type { TranslationKey } from '../shared/translations'
 
 const WINE_TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified']
+
+const WINE_TYPE_LABEL_KEYS: Record<WineType, TranslationKey> = {
+  red: 'wine_type_red',
+  white: 'wine_type_white',
+  rose: 'wine_type_rose',
+  sparkling: 'wine_type_sparkling',
+  dessert: 'wine_type_dessert',
+  fortified: 'wine_type_fortified',
+}
 
 type Identity = {
   name: string
@@ -90,7 +100,7 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
   }
 
   return (
-    <Modal title="Muokkaa viiniä" onClose={onClose}>
+    <Modal title={t('identity_modal_title')} onClose={onClose}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <input
           ref={fileInputRef}
@@ -118,45 +128,45 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
               onClick={handlePickImage}
               style={{ display: 'block', marginTop: '4px', fontSize: '12px', color: COLORS.textMuted, cursor: 'pointer' }}
             >
-              Vaihda kuva
+              {t('wine_change_image')}
             </span>
           </div>
         ) : (
           <span onClick={handlePickImage} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
-            + Lisää kuva
+            + {t('wine_add_image')}
           </span>
         )}
 
         <label>
-          <div style={FIELD_LABEL_STYLE}>Nimi</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_name_label')}</div>
           <input value={name} onChange={(e) => setName(e.target.value)} required style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Tuottaja</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_producer_label')}</div>
           <input value={producer} onChange={(e) => setProducer(e.target.value)} required style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Maa</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_country_label')}</div>
           <input value={country} onChange={(e) => setCountry(e.target.value)} required style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Alue</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_region_label')}</div>
           <input value={region} onChange={(e) => setRegion(e.target.value)} required style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Appellaatio</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_appellation_label')}</div>
           <input value={appellation} onChange={(e) => setAppellation(e.target.value)} style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Tyyppi</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_type_label')}</div>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as WineType)}
             style={{ ...FIELD_STYLE, appearance: 'none', WebkitAppearance: 'none' }}
           >
-            {WINE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {WINE_TYPES.map((wineType) => (
+              <option key={wineType} value={wineType}>
+                {t(WINE_TYPE_LABEL_KEYS[wineType])}
               </option>
             ))}
           </select>
@@ -164,10 +174,10 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
-            {saving ? t('common_saving') : 'Tallenna'}
+            {saving ? t('common_saving') : t('common_save')}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
-            Peruuta
+            {t('common_cancel')}
           </button>
         </div>
       </form>

@@ -5,12 +5,14 @@ import type { Bottle } from '../types'
 import { BottleEditModal } from '../../../app/BottleEditModal'
 import { TastingModal } from '../../../app/TastingModal'
 import { COLORS } from '../../../shared/colors'
+import { useTranslation } from '../../../app/LanguageContext'
 
 type Props = { wineId: string; editMode: boolean }
 
 type ModalState = { mode: 'edit'; bottle: Bottle } | { mode: 'create' } | null
 
 export function BottleManager({ wineId, editMode }: Props) {
+  const t = useTranslation()
   const [modalState, setModalState] = useState<ModalState>(null)
   const [tastingBottle, setTastingBottle] = useState<Bottle | null>(null)
   const { data: bottles = [], isLoading } = useBottlesForWine(wineId)
@@ -40,7 +42,7 @@ export function BottleManager({ wineId, editMode }: Props) {
             cursor: 'pointer',
           }}
         >
-          + Lisää pullo
+          + {t('bottle_add_link')}
         </button>
       )}
 

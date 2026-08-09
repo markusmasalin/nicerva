@@ -83,7 +83,7 @@ export function VintageModal({ mode, wine, groupTemplate, onClose }: Props) {
         <label>
           <div style={FIELD_LABEL_STYLE}>{t('wine_grapes_label')}</div>
           <input
-            placeholder="Pilkulla eroteltuna"
+            placeholder={t('wine_grapes_placeholder')}
             value={grapesInput}
             onChange={(e) => setGrapesInput(e.target.value)}
             style={FIELD_STYLE}

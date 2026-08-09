@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { WineFilterParams } from '../types'
 import { COLORS } from '../../../shared/colors'
 import { useTranslation } from '../../../app/LanguageContext'
+import { CountryPicker } from '../../../shared/CountryPicker'
 
 const fieldStyle: CSSProperties = {
   border: 'none',
@@ -33,10 +34,10 @@ export function WineFilters({ filters, onChange }: Props) {
         onChange={(e) => updateText('search', e.target.value)}
         style={fieldStyle}
       />
-      <input
-        placeholder="Maa"
-        value={filters.country ?? ''}
-        onChange={(e) => updateText('country', e.target.value)}
+      <CountryPicker
+        value={filters.country ?? null}
+        onChange={(code) => onChange({ ...filters, country: code ?? undefined })}
+        allowEmpty
         style={fieldStyle}
       />
       <input

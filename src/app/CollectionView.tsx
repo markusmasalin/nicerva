@@ -6,7 +6,8 @@ import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
 import { BottleIcon } from '../shared/BottleIcon'
-import { useTranslation } from './LanguageContext'
+import { useTranslation, useLanguage } from './LanguageContext'
+import { getCountryName } from '../shared/countries'
 
 type NameProducerGroup = {
   key: string
@@ -173,6 +174,7 @@ type CollectionViewProps = {
 
 export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
   const t = useTranslation()
+  const language = useLanguage()
   const { data: wines = [], isLoading } = useWines(filters)
   const { data: bottleCounts } = useBottleCounts()
   const { data: averagePrices } = useAveragePrices()
@@ -211,7 +213,9 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
               background: COLORS.line,
             }}
           />
-          <h2 style={{ margin: '0 0 14px', fontSize: '21px', fontWeight: 600 }}>{country.country}</h2>
+          <h2 style={{ margin: '0 0 14px', fontSize: '21px', fontWeight: 600 }}>
+            {getCountryName(country.country, language)}
+          </h2>
           {(() => {
             const flagColors = COUNTRY_FLAG_COLORS[country.country.toLowerCase().trim()]
             if (!flagColors) return null

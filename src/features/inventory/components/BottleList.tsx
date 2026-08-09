@@ -34,7 +34,7 @@ export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
   }
 
   if (bottles.length === 0) {
-    return <p>Ei vielä pulloja tälle viinille.</p>
+    return <p>{t('bottle_empty_state')}</p>
   }
 
   return (
@@ -48,12 +48,12 @@ export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
           <span style={{ flex: 1 }}>{bottle.note ?? ''}</span>
           {bottle.status === 'cellar' && (
             <span onClick={() => onOpenBottle(bottle)} style={linkStyle}>
-              🍾 Avaa pullo
+              🍾 {t('bottle_open_link')}
             </span>
           )}
           {editMode && (
             <span onClick={() => onEdit(bottle)} style={linkStyle}>
-              Muokkaa
+              {t('common_edit')}
             </span>
           )}
         </li>

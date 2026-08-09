@@ -46,7 +46,7 @@ function VintageBlock({ wine, editMode, averageRating, onEdit, onDelete }: Vinta
   const deleteTasting = useDeleteTasting()
 
   function handleDeleteTasting(id: string) {
-    if (!window.confirm('Poistetaanko tämä maistelu?')) return
+    if (!window.confirm(t('confirm_delete_tasting'))) return
     deleteTasting.mutate(id)
   }
 

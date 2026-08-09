@@ -78,7 +78,7 @@ export function BottleEditModal({ mode, wineId, bottle, onClose }: Props) {
 
   async function handleDelete() {
     if (!bottle) return
-    if (!window.confirm('Poistetaanko tämä pullo?')) return
+    if (!window.confirm(t('confirm_delete_bottle'))) return
     try {
       await deleteBottle.mutateAsync(bottle.id)
       onClose()

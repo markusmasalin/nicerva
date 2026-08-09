@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { COLORS } from './colors'
+import { useTranslation } from '../app/LanguageContext'
 
 type Props = {
   title: string
@@ -33,11 +34,12 @@ const cardStyle: CSSProperties = {
 // Yleiskäyttöinen modaalikuori. Korvaa inline-lomakkeet kaikkialla
 // sovelluksessa — kohdennetut muokkausmodaalit rakentuvat tämän päälle.
 export function Modal({ title, onClose, children }: Props) {
+  const t = useTranslation()
   return (
     <div onClick={onClose} style={overlayStyle}>
       <div onClick={(e) => e.stopPropagation()} style={cardStyle}>
         <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
-          ← Takaisin
+          ← {t('common_back')}
         </span>
         <h2 style={{ margin: '12px 0 20px', fontSize: '1.2rem', fontWeight: 400, color: COLORS.text }}>{title}</h2>
         {children}

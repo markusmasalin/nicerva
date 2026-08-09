@@ -84,6 +84,8 @@ export const en = {
   bottle_modal_create_title: 'Add bottle',
   bottle_location_label: 'Location',
   bottle_note_label: 'Note',
+  bottle_open_link: 'Open bottle',
+  bottle_empty_state: 'No bottles yet',
 
   tasting_loading_title: 'Tasting',
   tasting_saved_message: 'Your rating has been saved.',
@@ -97,4 +99,14 @@ export const en = {
   tasting_custom_food_placeholder: 'Write your own...',
   tasting_notes_placeholder: 'Any other thoughts?',
   tasting_skip_link: 'Skip, just mark as consumed',
+
+  identity_modal_title: 'Edit wine',
+
+  duplicate_modal_title: 'Already in your collection',
+  duplicate_modal_body: '{name} ({producer}) is already in your collection.',
+
+  confirm_delete_wine: 'Delete this wine?',
+  confirm_delete_vintage: 'Delete this vintage?',
+  confirm_delete_bottle: 'Delete this bottle?',
+  confirm_delete_tasting: 'Delete this tasting?',
 }

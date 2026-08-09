@@ -6,6 +6,7 @@ import { COLORS } from '../../../shared/colors'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../../../shared/fieldStyles'
 import { useTranslation } from '../../../app/LanguageContext'
 import type { TranslationKey } from '../../../shared/translations'
+import { CountryPicker } from '../../../shared/CountryPicker'
 
 const PRODUCER_SEARCH_DEBOUNCE_MS = 300
 
@@ -242,11 +243,10 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         )}
       <label>
         <div style={FIELD_LABEL_STYLE}>{t('wine_country_label')}</div>
-        <input
+        <CountryPicker
           value={wine.country}
-          onChange={(e) => setWine({ ...wine, country: e.target.value })}
+          onChange={(code) => setWine({ ...wine, country: code ?? '' })}
           required
-          style={FIELD_STYLE}
         />
       </label>
       <label>

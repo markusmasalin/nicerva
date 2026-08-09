@@ -84,6 +84,8 @@ export const fi = {
   bottle_modal_create_title: 'Lisää pullo',
   bottle_location_label: 'Sijainti',
   bottle_note_label: 'Muistiinpano',
+  bottle_open_link: 'Avaa pullo',
+  bottle_empty_state: 'Ei vielä pulloja',
 
   tasting_loading_title: 'Maistelu',
   tasting_saved_message: 'Arviosi on tallennettu.',
@@ -97,4 +99,14 @@ export const fi = {
   tasting_custom_food_placeholder: 'Kirjoita oma...',
   tasting_notes_placeholder: 'Muita ajatuksia?',
   tasting_skip_link: 'Ohita, merkitse vain juoduksi',
+
+  identity_modal_title: 'Muokkaa viiniä',
+
+  duplicate_modal_title: 'Löytyi jo kokoelmastasi',
+  duplicate_modal_body: '{name} ({producer}) on jo kokoelmassasi.',
+
+  confirm_delete_wine: 'Poistetaanko tämä viini?',
+  confirm_delete_vintage: 'Poistetaanko tämä vuosikerta?',
+  confirm_delete_bottle: 'Poistetaanko tämä pullo?',
+  confirm_delete_tasting: 'Poistetaanko tämä maistelu?',
 }
