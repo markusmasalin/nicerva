@@ -1,12 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { Bottle, BottleStatus } from '../types'
 import { COLORS } from '../../../shared/colors'
-
-const STATUS_LABELS: Record<BottleStatus, string> = {
-  cellar: 'Kellarissa',
-  consumed: 'Juotu',
-  gifted: 'Lahjoitettu',
-}
+import { useTranslation } from '../../../app/LanguageContext'
 
 const linkStyle: CSSProperties = {
   fontSize: '12px',
@@ -31,6 +26,13 @@ type Props = {
 }
 
 export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
+  const t = useTranslation()
+  const statusLabels: Record<BottleStatus, string> = {
+    cellar: t('bottle_status_cellar'),
+    consumed: t('bottle_status_consumed'),
+    gifted: t('bottle_status_gifted'),
+  }
+
   if (bottles.length === 0) {
     return <p>Ei vielä pulloja tälle viinille.</p>
   }
@@ -42,7 +44,7 @@ export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
           <span style={{ flex: 1, color: COLORS.text }}>{bottle.location ?? '-'}</span>
           <span style={{ width: '60px' }}>{bottle.purchasePrice != null ? `${bottle.purchasePrice} €` : '-'}</span>
           <span style={{ width: '110px' }}>{bottle.purchaseDate ?? '-'}</span>
-          <span style={{ width: '90px' }}>{STATUS_LABELS[bottle.status]}</span>
+          <span style={{ width: '90px' }}>{statusLabels[bottle.status]}</span>
           <span style={{ flex: 1 }}>{bottle.note ?? ''}</span>
           {bottle.status === 'cellar' && (
             <span onClick={() => onOpenBottle(bottle)} style={linkStyle}>

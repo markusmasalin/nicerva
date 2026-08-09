@@ -5,6 +5,7 @@ import type { WineType } from '../features/wines'
 import { Modal } from '../shared/Modal'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../shared/fieldStyles'
 import { COLORS } from '../shared/colors'
+import { useTranslation } from './LanguageContext'
 
 const WINE_TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified']
 
@@ -39,6 +40,7 @@ const buttonStyle: CSSProperties = {
 }
 
 export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
+  const t = useTranslation()
   const [name, setName] = useState(initialValues.name)
   const [producer, setProducer] = useState(initialValues.producer)
   const [country, setCountry] = useState(initialValues.country)
@@ -161,8 +163,8 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
         </label>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button type="submit" disabled={saving} style={buttonStyle}>
-            Tallenna
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
+            {saving ? t('common_saving') : 'Tallenna'}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
             Peruuta

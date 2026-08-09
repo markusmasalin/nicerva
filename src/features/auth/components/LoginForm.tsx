@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { signIn } from '../api'
+import { COLORS } from '../../../shared/colors'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -14,7 +15,7 @@ export function LoginForm() {
     try {
       await signIn(email, password)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Kirjautuminen epäonnistui')
+      setError(err instanceof Error ? err.message : 'Sign in failed')
     } finally {
       setLoading(false)
     }
@@ -22,11 +23,24 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 300, margin: '4rem auto' }}>
-      <h1>Kirjaudu sisään</h1>
-      <input type="email" placeholder="Sähköposti" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      <input type="password" placeholder="Salasana" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <h1>Sign in</h1>
+      <p style={{ margin: '0 0 0.5rem', color: COLORS.textMuted }}>Your own wine cellar</p>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
-      <button type="submit" disabled={loading}>{loading ? 'Kirjaudutaan...' : 'Kirjaudu'}</button>
+      <button type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
     </form>
   )
 }

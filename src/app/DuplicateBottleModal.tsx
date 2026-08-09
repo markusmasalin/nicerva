@@ -4,6 +4,7 @@ import type { Wine } from '../features/wines'
 import { Modal } from '../shared/Modal'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../shared/fieldStyles'
 import { COLORS } from '../shared/colors'
+import { useTranslation } from './LanguageContext'
 
 type Props = {
   matchedWine: Wine
@@ -21,6 +22,7 @@ const buttonStyle: CSSProperties = {
 }
 
 export function DuplicateBottleModal({ matchedWine, onClose, onCreated }: Props) {
+  const t = useTranslation()
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState('')
   const [saving, setSaving] = useState(false)
@@ -68,13 +70,13 @@ export function DuplicateBottleModal({ matchedWine, onClose, onCreated }: Props)
             type="date"
             value={purchaseDate}
             onChange={(e) => setPurchaseDate(e.target.value)}
-            style={FIELD_STYLE}
+            style={{ ...FIELD_STYLE, maxWidth: '200px' }}
           />
         </label>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button type="submit" disabled={saving} style={buttonStyle}>
-            Lisää pullo
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
+            {saving ? t('common_adding') : 'Lisää pullo'}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
             Peruuta

@@ -5,6 +5,9 @@ export const tastingSchema = z.object({
   wineId: z.string(),
   bottleId: z.string().nullable(),
   rating: z.number().nullable(),
+  score100: z.number().nullable(),
+  tags: z.array(z.string()),
+  foodPairing: z.string().nullable(),
   note: z.string().nullable(),
   tastedAt: z.string(),
 })

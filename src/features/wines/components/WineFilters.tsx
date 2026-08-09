@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { WineFilterParams } from '../types'
 import { COLORS } from '../../../shared/colors'
+import { useTranslation } from '../../../app/LanguageContext'
 
 const fieldStyle: CSSProperties = {
   border: 'none',
@@ -18,6 +19,8 @@ type Props = {
 }
 
 export function WineFilters({ filters, onChange }: Props) {
+  const t = useTranslation()
+
   function updateText(key: keyof WineFilterParams, value: string) {
     onChange({ ...filters, [key]: value || undefined })
   }
@@ -25,7 +28,7 @@ export function WineFilters({ filters, onChange }: Props) {
   return (
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
       <input
-        placeholder="Hae nimellä..."
+        placeholder={t('filters_search_placeholder')}
         value={filters.search ?? ''}
         onChange={(e) => updateText('search', e.target.value)}
         style={fieldStyle}
@@ -37,19 +40,19 @@ export function WineFilters({ filters, onChange }: Props) {
         style={fieldStyle}
       />
       <input
-        placeholder="Alue"
+        placeholder={t('filters_region_placeholder')}
         value={filters.region ?? ''}
         onChange={(e) => updateText('region', e.target.value)}
         style={fieldStyle}
       />
       <input
-        placeholder="Rypäle"
+        placeholder={t('filters_grape_placeholder')}
         value={filters.grape ?? ''}
         onChange={(e) => updateText('grape', e.target.value)}
         style={fieldStyle}
       />
       <input
-        placeholder="Vuosikerta"
+        placeholder={t('filters_vintage_placeholder')}
         type="number"
         value={filters.vintage ?? ''}
         onChange={(e) =>

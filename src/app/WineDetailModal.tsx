@@ -2,10 +2,16 @@ import { useState, type CSSProperties } from 'react'
 import { useWines, useDeleteWine } from '../features/wines'
 import type { Wine } from '../features/wines'
 import { BottleManager } from '../features/inventory'
-import { useAverageRatingsByWine, useGroupAverageRating } from '../features/tastings'
+import {
+  useAverageRatingsByWine,
+  useGroupAverageRating,
+  useTastingsForWine,
+  useDeleteTasting,
+} from '../features/tastings'
 import { COLORS } from '../shared/colors'
 import { WineIdentityModal } from './WineIdentityModal'
 import { VintageModal } from './VintageModal'
+import { useTranslation } from './LanguageContext'
 
 type Identity = {
   name: string
@@ -21,7 +27,83 @@ const linkStyle: CSSProperties = { fontSize: '12px', color: COLORS.textMuted, cu
 
 type VintageModalState = { mode: 'edit'; wine: Wine } | { mode: 'create' } | null
 
+function formatTastedAt(dateStr: string): string {
+  const [, month, day] = dateStr.split('-')
+  return `${day}.${month}.`
+}
+
+type VintageBlockProps = {
+  wine: Wine
+  editMode: boolean
+  averageRating: number | undefined
+  onEdit: () => void
+  onDelete: () => void
+}
+
+function VintageBlock({ wine, editMode, averageRating, onEdit, onDelete }: VintageBlockProps) {
+  const t = useTranslation()
+  const { data: tastings = [] } = useTastingsForWine(wine.id)
+  const deleteTasting = useDeleteTasting()
+
+  function handleDeleteTasting(id: string) {
+    if (!window.confirm('Poistetaanko tämä maistelu?')) return
+    deleteTasting.mutate(id)
+  }
+
+  return (
+    <div style={{ marginBottom: '40px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+        <span style={{ color: COLORS.text }}>{t('vintage_label').replace('{year}', String(wine.vintage ?? '–'))}</span>
+        {averageRating != null && (
+          <span style={{ color: COLORS.textMuted, fontSize: '0.85rem' }}>⭐ {averageRating.toFixed(1)}</span>
+        )}
+        {editMode && (
+          <>
+            <span onClick={onEdit} style={linkStyle}>
+              {t('common_edit')}
+            </span>
+            <span onClick={onDelete} style={linkStyle}>
+              {t('common_delete')}
+            </span>
+          </>
+        )}
+      </div>
+      <BottleManager wineId={wine.id} editMode={editMode} />
+      {tastings.length > 0 && (
+        <ul
+          style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: '8px 0 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          {tastings.map((tasting) => (
+            <li
+              key={tasting.id}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: COLORS.textMuted }}
+            >
+              <span>
+                ★{tasting.rating ?? '–'} · {formatTastedAt(tasting.tastedAt)}
+                {tasting.score100 != null ? ` · ${tasting.score100}/100` : ''}
+              </span>
+              {editMode && (
+                <span onClick={() => handleDeleteTasting(tasting.id)} style={linkStyle}>
+                  {t('common_delete')}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export function WineDetailModal({ identity, onClose }: Props) {
+  const t = useTranslation()
   const { data: wines = [] } = useWines()
   const [editMode, setEditMode] = useState(false)
   const [showIdentityModal, setShowIdentityModal] = useState(false)
@@ -73,13 +155,13 @@ export function WineDetailModal({ identity, onClose }: Props) {
           }}
         >
           <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
-            ← Takaisin
+            ← {t('common_back')}
           </span>
 
           <div style={{ marginTop: '24px', marginBottom: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <span onClick={() => setEditMode((current) => !current)} style={linkStyle}>
-                {editMode ? 'Valmis' : 'Muokkaa'}
+                {editMode ? t('common_done') : t('common_edit')}
               </span>
             </div>
 
@@ -92,7 +174,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
                 )}
                 {showGrapesRow && (
                   <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>
-                    Rypäleet: {first.grapes.join(', ')}
+                    {t('wine_grapes_prefix')}: {first.grapes.join(', ')}
                   </div>
                 )}
                 {groupAverageRating != null && (
@@ -105,7 +187,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
                     onClick={() => setShowIdentityModal(true)}
                     style={{ ...linkStyle, display: 'inline-block', padding: '8px 0' }}
                   >
-                    Muokkaa
+                    {t('common_edit')}
                   </span>
                 )}
               </div>
@@ -126,32 +208,19 @@ export function WineDetailModal({ identity, onClose }: Props) {
           </div>
 
           {wineGroup.map((wine) => (
-            <div key={wine.id} style={{ marginBottom: '40px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
-                <span style={{ color: COLORS.text }}>Vuosikerta {wine.vintage ?? '–'}</span>
-                {averageRatings[wine.id] != null && (
-                  <span style={{ color: COLORS.textMuted, fontSize: '0.85rem' }}>
-                    ⭐ {averageRatings[wine.id].toFixed(1)}
-                  </span>
-                )}
-                {editMode && (
-                  <>
-                    <span onClick={() => setVintageModal({ mode: 'edit', wine })} style={linkStyle}>
-                      Muokkaa
-                    </span>
-                    <span onClick={() => deleteWine.mutate(wine.id)} style={linkStyle}>
-                      Poista
-                    </span>
-                  </>
-                )}
-              </div>
-              <BottleManager wineId={wine.id} editMode={editMode} />
-            </div>
+            <VintageBlock
+              key={wine.id}
+              wine={wine}
+              editMode={editMode}
+              averageRating={averageRatings[wine.id]}
+              onEdit={() => setVintageModal({ mode: 'edit', wine })}
+              onDelete={() => deleteWine.mutate(wine.id)}
+            />
           ))}
 
           {editMode && (
             <span onClick={() => setVintageModal({ mode: 'create' })} style={linkStyle}>
-              + Lisää vuosikerta
+              + {t('vintage_add_link')}
             </span>
           )}
         </div>

@@ -1,5 +1,7 @@
+import { COLORS } from './colors'
+
 export const WINE_TYPE_COLORS: Record<string, string> = {
-  red: '#6E4247',
+  red: COLORS.wineRed,
   white: '#D9D3C4',
   rose: '#C98F8F',
   sparkling: '#B8B8A8',

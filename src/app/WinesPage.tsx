@@ -18,6 +18,7 @@ import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
 import { DuplicateBottleModal } from './DuplicateBottleModal'
 import { JustAddedToast } from './JustAddedToast'
+import { useTranslation } from './LanguageContext'
 
 const SCANNED_WINE_DEFAULTS: NewWine = {
   name: '',
@@ -90,6 +91,7 @@ function findBestMatch(
 // yhdistetään UI:ksi. Huomaa: tämä komponentti tuo kummastakin
 // moduulista VAIN niiden index.ts:n kautta julkaistut asiat.
 export function WinesPage() {
+  const t = useTranslation()
   const [filters, setFilters] = useState<WineFilterParams>({})
   const [editing, setEditing] = useState<Wine | null>(null)
   const [scanDraft, setScanDraft] = useState<NewWine | null>(null)
@@ -231,7 +233,7 @@ export function WinesPage() {
       <div className="page-container">
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{ margin: 0, letterSpacing: '0.05em', color: COLORS.text }}>NICERVA</h1>
-          <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>Sinun oma viinikellarisi</p>
+          <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>{t('login_subtitle')}</p>
         </div>
 
         <div
@@ -248,7 +250,7 @@ export function WinesPage() {
             onClick={() => setShowFilters((current) => !current)}
             style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
           >
-            Hae
+            {t('collection_filter_link')}
           </span>
           <span
             onClick={() => {
@@ -263,13 +265,13 @@ export function WinesPage() {
             }}
             style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
           >
-            + Löysin uuden viinin
+            {t('collection_add_wine_link')}
           </span>
           <span
             onClick={() => frontScanInputRef.current?.click()}
             style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
           >
-            Skannaa pullo
+            {t('collection_scan_wine_link')}
           </span>
           <input
             ref={frontScanInputRef}
@@ -282,7 +284,7 @@ export function WinesPage() {
         </div>
 
         {scanning && (
-          <p style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: 0 }}>Tunnistetaan...</p>
+          <p style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: 0 }}>{t('collection_identifying')}</p>
         )}
 
         {showFilters && <WineFilters filters={filters} onChange={setFilters} />}

@@ -6,6 +6,7 @@ import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
 import { BottleIcon } from '../shared/BottleIcon'
+import { useTranslation } from './LanguageContext'
 
 type NameProducerGroup = {
   key: string
@@ -171,12 +172,13 @@ type CollectionViewProps = {
 }
 
 export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
+  const t = useTranslation()
   const { data: wines = [], isLoading } = useWines(filters)
   const { data: bottleCounts } = useBottleCounts()
   const { data: averagePrices } = useAveragePrices()
 
   if (isLoading) {
-    return <p>Ladataan...</p>
+    return <p>{t('common_loading')}</p>
   }
 
   const counts = bottleCounts ?? {}
@@ -184,7 +186,12 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
   const countries = buildCountryGroups(wines, counts)
 
   if (countries.length === 0) {
-    return <p style={{ color: COLORS.textMuted }}>Ei viinejä kokoelmassa.</p>
+    return (
+      <div style={{ textAlign: 'center', padding: '48px 0' }}>
+        <p style={{ color: COLORS.text, fontSize: '16px', margin: '0 0 8px' }}>{t('collection_empty_title')}</p>
+        <p style={{ color: COLORS.textMuted, fontSize: '14px', margin: 0 }}>{t('collection_empty_body')}</p>
+      </div>
+    )
   }
 
   return (
@@ -234,7 +241,9 @@ export function CollectionView({ filters, onOpenWine }: CollectionViewProps) {
                 }}
               >
                 <span style={{ fontSize: '17px', fontWeight: 500, color: COLORS.text }}>{region.region}</span>
-                <span style={{ fontSize: '14px', color: COLORS.textMuted }}>{region.totalBottles} pulloa</span>
+                <span style={{ fontSize: '14px', color: COLORS.textMuted }}>
+                  {region.totalBottles} {t('collection_bottles_suffix')}
+                </span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '36px' }}>
                 {region.nameGroups.map((group) => (

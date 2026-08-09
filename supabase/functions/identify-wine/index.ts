@@ -42,7 +42,9 @@ Return exactly this JSON structure and nothing else:
 
 "detectedText" must contain every piece of raw text you can read on the label, one entry per line or fragment, regardless of whether you could map it into the "wine" fields.
 
-Return country and region in Finnish (e.g. "Italia" not "Italy", "Toscana" not "Tuscany" if there's a natural Finnish form, otherwise use the original name).
+Return region in Finnish (e.g. "Toscana" not "Tuscany" if there's a natural Finnish form, otherwise use the original name).
+
+The "country" field should be a two-letter ISO 3166-1 alpha-2 code (e.g. "IT" for Italy, "FR" for France, "ES" for Spain, "DE" for Germany, "US" for United States), not a country name in any language.
 
 Return ONLY valid JSON. Do not wrap the response in markdown. Do not include explanations, notes or surrounding text.`;
 
@@ -68,6 +70,19 @@ function stripJsonFences(text: string): string {
   const trimmed = text.trim();
   const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
   return fenced ? fenced[1].trim() : trimmed;
+}
+
+const ISO_COUNTRY_CODE_PATTERN = /^[A-Z]{2}$/;
+
+// Malli voi silti joskus palauttaa maan nimen koodin sijaan — parempi
+// pudottaa arvo null:ksi kuin päästää virheellinen koodi läpi näennäisesti
+// oikeana.
+function sanitizeWineCountry(wine: unknown): void {
+  if (!wine || typeof wine !== "object") return;
+  const record = wine as Record<string, unknown>;
+  if (typeof record.country !== "string" || !ISO_COUNTRY_CODE_PATTERN.test(record.country)) {
+    record.country = null;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -182,6 +197,8 @@ Deno.serve(async (req: Request) => {
   } catch {
     return jsonResponse({ error: "Failed to parse the wine label data as JSON." }, 500);
   }
+
+  sanitizeWineCountry(parsed.wine);
 
   return jsonResponse(
     {

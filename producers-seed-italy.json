@@ -1,0 +1,668 @@
+[
+  {
+    "name": "Antinori",
+    "aliases": ["Marchesi Antinori"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Gaja",
+    "aliases": ["Angelo Gaja"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Vietti",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Giacomo Conterno",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Bruno Giacosa",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Produttori del Barbaresco",
+    "aliases": ["Produttori"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Pio Cesare",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Ceretto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Luciano Sandrone",
+    "aliases": ["Sandrone"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Paolo Scavino",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Elio Altare",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Bartolo Mascarello",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Giuseppe Rinaldi",
+    "aliases": ["Beppe Rinaldi"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "G.D. Vajra",
+    "aliases": ["GD Vajra"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Massolino",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Aldo Conterno",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Oddero",
+    "aliases": ["Poderi e Cantine Oddero"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Brezza",
+    "aliases": ["Brezza Giacomo e Figli"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Cappellano",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Roagna",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "La Spinetta",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Braida",
+    "aliases": ["Braida di Giacomo Bologna"],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Prunotto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Marchesi di Barolo",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Fontanafredda",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Biondi-Santi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Banfi",
+    "aliases": ["Castello Banfi"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Argiano",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Poggio di Sotto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Il Poggione",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Fuligni",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Casanova di Neri",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Altesino",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Valdicava",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Le Ragnaie",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Salvioni",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Col d'Orcia",
+    "aliases": ["Col d Orcia"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Boscarelli",
+    "aliases": ["Poderi Boscarelli"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Avignonesi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Felsina",
+    "aliases": ["Fèlsina"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Fontodi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Castello di Ama",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Castello di Volpaia",
+    "aliases": ["Volpaia"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Isole e Olena",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Querciabella",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Badia a Coltibuono",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Riecine",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Montevertine",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Mazzei",
+    "aliases": ["Castello di Fonterutoli"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Tenuta San Guido",
+    "aliases": ["Sassicaia"],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Ornellaia",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Masseto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Le Macchiole",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Guado al Tasso",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Grattamacco",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Petra",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Argentiera",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Tua Rita",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Duemani",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Tuscany"
+  },
+  {
+    "name": "Allegrini",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Giuseppe Quintarelli",
+    "aliases": ["Quintarelli"],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Dal Forno Romano",
+    "aliases": ["Dal Forno"],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Tommasi",
+    "aliases": ["Tommasi Viticoltori"],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Masi",
+    "aliases": ["Masi Agricola"],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Tedeschi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Speri",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Zenato",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Bertani",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Pieropan",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Anselmi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Veneto"
+  },
+  {
+    "name": "Ca' dei Frati",
+    "aliases": ["Cà dei Frati"],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Bellavista",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Ca' del Bosco",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Berlucchi",
+    "aliases": ["Guido Berlucchi"],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Ferrari Trento",
+    "aliases": ["Ferrari"],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Cantina Terlano",
+    "aliases": ["Terlan"],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Elena Walch",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Alois Lageder",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Nals Margreid",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Colterenzio",
+    "aliases": ["Schreckbichl"],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Jermann",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Friuli-Venezia Giulia"
+  },
+  {
+    "name": "Livio Felluga",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Friuli-Venezia Giulia"
+  },
+  {
+    "name": "Vie di Romans",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Friuli-Venezia Giulia"
+  },
+  {
+    "name": "Planeta",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Donnafugata",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Benanti",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Tenuta delle Terre Nere",
+    "aliases": ["Terre Nere"],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Passopisciaro",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Girolamo Russo",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Pietradolce",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "COS",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Arianna Occhipinti",
+    "aliases": ["Occhipinti"],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Tasca d'Almerita",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  },
+  {
+    "name": "Feudi di San Gregorio",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Campania"
+  },
+  {
+    "name": "Mastroberardino",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Campania"
+  },
+  {
+    "name": "Arnaldo Caprai",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Umbria"
+  },
+  {
+    "name": "Famiglia Cotarella",
+    "aliases": ["Cotarella"],
+    "country": "Italy",
+    "region": "Lazio"
+  },
+  {
+    "name": "Argiolas",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sardinia"
+  },
+  {
+    "name": "Lungarotti",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Umbria"
+  },
+  {
+    "name": "San Leonardo",
+    "aliases": ["Tenuta San Leonardo"],
+    "country": "Italy",
+    "region": "Trentino-Alto Adige"
+  },
+  {
+    "name": "Umani Ronchi",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Marche"
+  },
+  {
+    "name": "Nino Negri",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Ar.Pe.Pe.",
+    "aliases": ["ARPEPE"],
+    "country": "Italy",
+    "region": "Lombardy"
+  },
+  {
+    "name": "Elvio Cogno",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Cavallotto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Fratelli Alessandria",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Renato Ratti",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Marcarini",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Poderi Colla",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Michele Chiarlo",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Piedmont"
+  },
+  {
+    "name": "Feudi del Pisciotto",
+    "aliases": [],
+    "country": "Italy",
+    "region": "Sicily"
+  }
+]

@@ -1,5 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { findKnownAppellation } from '../../shared/matchAppellation'
+import { findKnownProducer } from './matchProducer'
+import { getAllProducers } from '../producers'
 import type { Wine, NewWine, WineFilterParams, WineType } from './types'
 
 // Nämä kaksi funktiota ovat AINOA paikka koko sovelluksessa, joka tietää
@@ -41,15 +43,21 @@ function toRow(wine: NewWine) {
 export async function getWines(filters: WineFilterParams = {}): Promise<Wine[]> {
   let query = supabase.from('wines').select('*').order('created_at', { ascending: false })
 
-  if (filters.country) query = query.eq('country', filters.country)
-  if (filters.region) query = query.eq('region', filters.region)
+  if (filters.country) query = query.ilike('country', `%${filters.country}%`)
+  if (filters.region) query = query.ilike('region', `%${filters.region}%`)
   if (filters.vintage) query = query.eq('vintage', filters.vintage)
-  if (filters.grape) query = query.contains('grapes', [filters.grape])
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
 
   const { data, error } = await query
   if (error) throw error
-  return (data ?? []).map(toWine)
+  const wines = (data ?? []).map(toWine)
+
+  // grapes on array-sarake, eikä contains() tue osittaista tekstihakua
+  // array-alkioiden sisällä — suodatetaan siksi client-puolella. Riittävä
+  // henkilökohtaisen kokoelman kokoluokassa.
+  if (!filters.grape) return wines
+  const grapeQuery = filters.grape.toLowerCase()
+  return wines.filter((wine) => wine.grapes.some((g) => g.toLowerCase().includes(grapeQuery)))
 }
 
 export async function getWine(id: string): Promise<Wine> {
@@ -186,7 +194,7 @@ export async function identifyWine(frontImage: File, backImage?: File): Promise<
   if (!response.ok) throw new Error('Viinin tunnistus epäonnistui.')
 
   const result: IdentifyWineResult = await response.json()
-  return applyKnownAppellation(result)
+  return applyKnownProducer(applyKnownAppellation(result))
 }
 
 // Tunnetun appellaatiolistan osuma on luotettavampi kuin LLM:n oma arvaus
@@ -202,6 +210,25 @@ function applyKnownAppellation(result: IdentifyWineResult): IdentifyWineResult {
     wine: {
       ...result.wine,
       appellation: match.name,
+      country: result.wine.country ?? match.country,
+      region: result.wine.region ?? match.region,
+    },
+  }
+}
+
+// Sama periaate producers-taululle: jos raakatekstistä löytyy tunnettu
+// tuottaja (name tai jokin alias), korvataan producer-kenttä kanonisella
+// name-arvolla ja täytetään country/region vain jos ne olivat vielä tyhjiä.
+async function applyKnownProducer(result: IdentifyWineResult): Promise<IdentifyWineResult> {
+  const producers = await getAllProducers()
+  const match = findKnownProducer(result.detectedText, producers)
+  if (!match) return result
+
+  return {
+    ...result,
+    wine: {
+      ...result.wine,
+      producer: match.name,
       country: result.wine.country ?? match.country,
       region: result.wine.region ?? match.region,
     },

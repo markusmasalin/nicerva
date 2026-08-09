@@ -1,5 +1,6 @@
 import type { Wine } from '../features/wines'
 import { COLORS } from '../shared/colors'
+import { useTranslation } from './LanguageContext'
 
 type Props = {
   wines: Wine[]
@@ -7,6 +8,7 @@ type Props = {
 }
 
 export function CollectionOverview({ wines, bottleCounts }: Props) {
+  const t = useTranslation()
   const totals = new Map<string, number>()
   for (const wine of wines) {
     const count = bottleCounts[wine.id] ?? 0
@@ -34,7 +36,7 @@ export function CollectionOverview({ wines, bottleCounts }: Props) {
           }}
         >
           <span style={{ color: COLORS.text }}>{country}</span>
-          <span style={{ color: COLORS.textMuted }}>{total} pulloa</span>
+          <span style={{ color: COLORS.textMuted }}>{total} {t('collection_bottles_suffix')}</span>
         </div>
       ))}
     </div>

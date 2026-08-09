@@ -1,9 +1,24 @@
-import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { NewWine, WineType } from '../types'
+import { searchProducers, createProducer } from '../../producers'
+import type { Producer } from '../../producers'
 import { COLORS } from '../../../shared/colors'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../../../shared/fieldStyles'
+import { useTranslation } from '../../../app/LanguageContext'
+import type { TranslationKey } from '../../../shared/translations'
+
+const PRODUCER_SEARCH_DEBOUNCE_MS = 300
 
 const WINE_TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified']
+
+const WINE_TYPE_LABEL_KEYS: Record<WineType, TranslationKey> = {
+  red: 'wine_type_red',
+  white: 'wine_type_white',
+  rose: 'wine_type_rose',
+  sparkling: 'wine_type_sparkling',
+  dessert: 'wine_type_dessert',
+  fortified: 'wine_type_fortified',
+}
 
 const EMPTY_WINE: NewWine = {
   name: '',
@@ -35,16 +50,22 @@ export type PurchaseInfo = {
 type Props = {
   initial?: NewWine
   isEditing: boolean
-  onSubmit: (wine: NewWine, imageFile: File | null, purchaseInfo: PurchaseInfo) => void
+  onSubmit: (wine: NewWine, imageFile: File | null, purchaseInfo: PurchaseInfo) => void | Promise<void>
   onCancel?: () => void
 }
 
 export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
+  const t = useTranslation()
   const [wine, setWine] = useState<NewWine>(initial ?? EMPTY_WINE)
   const [grapesInput, setGrapesInput] = useState(wine.grapes.join(', '))
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [producerSuggestions, setProducerSuggestions] = useState<Producer[]>([])
+  const [producerSearchComplete, setProducerSearchComplete] = useState(false)
+  const [suppressProducerSuggestions, setSuppressProducerSuggestions] = useState(false)
+  const [addingProducer, setAddingProducer] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
@@ -55,19 +76,86 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
     [selectedFile, initial?.labelImageUrl],
   )
 
-  function handleSubmit(e: FormEvent) {
+  useEffect(() => {
+    if (suppressProducerSuggestions || wine.producer.trim().length < 2) {
+      setProducerSuggestions([])
+      setProducerSearchComplete(false)
+      return
+    }
+    setProducerSearchComplete(false)
+    let cancelled = false
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchProducers(wine.producer)
+        if (!cancelled) {
+          setProducerSuggestions(results)
+          setProducerSearchComplete(true)
+        }
+      } catch {
+        if (!cancelled) {
+          setProducerSuggestions([])
+          setProducerSearchComplete(true)
+        }
+      }
+    }, PRODUCER_SEARCH_DEBOUNCE_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [wine.producer, suppressProducerSuggestions])
+
+  function selectProducer(producer: Producer) {
+    setWine((current) => ({
+      ...current,
+      producer: producer.name,
+      country: current.country || producer.country || '',
+      region: current.region || producer.region || '',
+    }))
+    setSuppressProducerSuggestions(true)
+    setProducerSuggestions([])
+  }
+
+  async function handleAddNewProducer() {
+    if (addingProducer) return
+    const name = wine.producer.trim()
+    if (!name) return
+    setAddingProducer(true)
+    try {
+      const created = await createProducer({
+        name,
+        country: wine.country.trim() || null,
+        region: wine.region.trim() || null,
+      })
+      // Näytetään heti vahvistuksena valittavana ehdotuksena "+ Lisää uutena" -linkin sijaan.
+      setProducerSuggestions([created])
+      setProducerSearchComplete(true)
+    } catch {
+      alert('Tuottajan lisäys epäonnistui.')
+    } finally {
+      setAddingProducer(false)
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    onSubmit(
-      {
-        ...wine,
-        grapes: grapesInput.split(',').map((g) => g.trim()).filter(Boolean),
-      },
-      selectedFile,
-      {
-        purchasePrice: purchasePrice ? Number(purchasePrice) : null,
-        purchaseDate: purchaseDate || null,
-      },
-    )
+    setIsSubmitting(true)
+    try {
+      await onSubmit(
+        {
+          ...wine,
+          grapes: grapesInput.split(',').map((g) => g.trim()).filter(Boolean),
+        },
+        selectedFile,
+        {
+          purchasePrice: purchasePrice ? Number(purchasePrice) : null,
+          purchaseDate: purchaseDate || null,
+        },
+      )
+    } finally {
+      // Lomake sulkeutuu yleensä onnistuneen lähetyksen jälkeen (komponentti
+      // unmountataan), jolloin tämä setState on no-op — harmiton React 19:ssä.
+      setIsSubmitting(false)
+    }
   }
 
   const grapesSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
@@ -77,9 +165,9 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <label>
-        <div style={FIELD_LABEL_STYLE}>Nimi</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_name_label')}</div>
         <input
-          placeholder="Minkä viinin löysit?"
+          placeholder={t('wine_name_placeholder')}
           value={wine.name}
           onChange={(e) => setWine({ ...wine, name: e.target.value })}
           required
@@ -87,17 +175,73 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         />
       </label>
       <label>
-        <div style={FIELD_LABEL_STYLE}>Tuottaja</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_producer_label')}</div>
         <input
-          placeholder="Kuka sen teki?"
+          placeholder={t('wine_producer_placeholder')}
           value={wine.producer}
-          onChange={(e) => setWine({ ...wine, producer: e.target.value })}
+          onChange={(e) => {
+            setWine({ ...wine, producer: e.target.value })
+            setSuppressProducerSuggestions(false)
+          }}
           required
           style={FIELD_STYLE}
         />
       </label>
+      {producerSuggestions.length > 0 && (
+        <ul
+          style={{
+            listStyle: 'none',
+            margin: '-8px 0 0',
+            padding: 0,
+            border: `1px solid ${COLORS.line}`,
+            borderRadius: '8px',
+            background: '#FFFFFF',
+            overflow: 'hidden',
+          }}
+        >
+          {producerSuggestions.map((producer, index) => (
+            <li
+              key={producer.id}
+              onClick={() => selectProducer(producer)}
+              style={{
+                padding: '10px 14px',
+                fontSize: '14px',
+                color: COLORS.text,
+                cursor: 'pointer',
+                borderBottom: index < producerSuggestions.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+              }}
+            >
+              {producer.name}
+              {(producer.country || producer.region) && (
+                <span style={{ color: COLORS.textMuted }}>
+                  {' '}
+                  ({[producer.country, producer.region].filter(Boolean).join(', ')})
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {producerSuggestions.length === 0 &&
+        producerSearchComplete &&
+        !suppressProducerSuggestions &&
+        wine.producer.trim().length >= 2 && (
+          <span
+            onClick={handleAddNewProducer}
+            style={{
+              color: COLORS.textMuted,
+              fontSize: '13px',
+              cursor: addingProducer ? 'default' : 'pointer',
+              opacity: addingProducer ? 0.6 : 1,
+            }}
+          >
+            {addingProducer
+              ? t('common_adding')
+              : t('producer_add_new').replace('{name}', wine.producer.trim())}
+          </span>
+        )}
       <label>
-        <div style={FIELD_LABEL_STYLE}>Maa</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_country_label')}</div>
         <input
           value={wine.country}
           onChange={(e) => setWine({ ...wine, country: e.target.value })}
@@ -106,8 +250,9 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         />
       </label>
       <label>
-        <div style={FIELD_LABEL_STYLE}>Alue</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_region_label')}</div>
         <input
+          placeholder={t('wine_region_placeholder')}
           value={wine.region}
           onChange={(e) => setWine({ ...wine, region: e.target.value })}
           required
@@ -115,24 +260,25 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         />
       </label>
       <label>
-        <div style={FIELD_LABEL_STYLE}>Vuosikerta</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_vintage_label')}</div>
         <input
           type="number"
+          placeholder={t('wine_vintage_placeholder')}
           value={wine.vintage ?? ''}
           onChange={(e) => setWine({ ...wine, vintage: e.target.value ? Number(e.target.value) : null })}
           style={FIELD_STYLE}
         />
       </label>
       <label>
-        <div style={FIELD_LABEL_STYLE}>Tyyppi</div>
+        <div style={FIELD_LABEL_STYLE}>{t('wine_type_label')}</div>
         <select
           value={wine.type}
           onChange={(e) => setWine({ ...wine, type: e.target.value as WineType })}
           style={{ ...FIELD_STYLE, appearance: 'none', WebkitAppearance: 'none' }}
         >
-          {WINE_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {WINE_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t(WINE_TYPE_LABEL_KEYS[type])}
             </option>
           ))}
         </select>
@@ -157,15 +303,16 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           onClick={() => fileInputRef.current?.click()}
           style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
         >
-          + Lisää kuva
+          + {t('wine_add_image')}
         </span>
       )}
 
       {showMoreFields ? (
         <>
           <label>
-            <div style={FIELD_LABEL_STYLE}>Appellaatio</div>
+            <div style={FIELD_LABEL_STYLE}>{t('wine_appellation_label')}</div>
             <input
+              placeholder={t('wine_appellation_placeholder')}
               value={wine.appellation ?? ''}
               onChange={(e) => setWine({ ...wine, appellation: e.target.value || null })}
               style={FIELD_STYLE}
@@ -173,7 +320,7 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           </label>
           <label>
             <div style={{ ...FIELD_LABEL_STYLE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Rypäleet</span>
+              <span>{t('wine_grapes_label')}</span>
               {wine.name.trim() !== '' && (
                 <a
                   href={grapesSearchUrl}
@@ -181,12 +328,12 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
                   rel="noopener noreferrer"
                   style={{ color: COLORS.textMuted, fontSize: '13px' }}
                 >
-                  Etsi verkosta
+                  {t('wine_search_online_link')}
                 </a>
               )}
             </div>
             <input
-              placeholder="Pilkulla eroteltuna"
+              placeholder={t('wine_grapes_placeholder')}
               value={grapesInput}
               onChange={(e) => setGrapesInput(e.target.value)}
               style={FIELD_STYLE}
@@ -195,29 +342,31 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           {!isEditing && (
             <>
               <label>
-                <div style={FIELD_LABEL_STYLE}>Ostohinta €</div>
+                <div style={FIELD_LABEL_STYLE}>{t('wine_purchase_price_label')}</div>
                 <input
                   type="number"
                   step="0.01"
+                  placeholder={t('wine_purchase_price_placeholder')}
                   value={purchasePrice}
                   onChange={(e) => setPurchasePrice(e.target.value)}
                   style={FIELD_STYLE}
                 />
               </label>
               <label>
-                <div style={FIELD_LABEL_STYLE}>Ostopäivä</div>
+                <div style={FIELD_LABEL_STYLE}>{t('wine_purchase_date_label')}</div>
                 <input
                   type="date"
                   value={purchaseDate}
                   onChange={(e) => setPurchaseDate(e.target.value)}
-                  style={FIELD_STYLE}
+                  style={{ ...FIELD_STYLE, maxWidth: '200px' }}
                 />
               </label>
             </>
           )}
           <label>
-            <div style={FIELD_LABEL_STYLE}>Muistiinpanot</div>
+            <div style={FIELD_LABEL_STYLE}>{t('wine_notes_label')}</div>
             <textarea
+              placeholder={t('wine_notes_placeholder')}
               value={wine.notes ?? ''}
               onChange={(e) => setWine({ ...wine, notes: e.target.value || null })}
               style={FIELD_STYLE}
@@ -229,17 +378,23 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           onClick={() => setShowMoreFields(true)}
           style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}
         >
-          + Lisää tarkempia tietoja
+          {t('wine_more_details_link')}
         </span>
       )}
 
       <div style={{ display: 'flex', gap: '12px' }}>
-        <button type="submit" style={buttonStyle}>
-          {isEditing ? 'Tallenna' : 'Lisää kokoelmaan'}
+        <button type="submit" disabled={isSubmitting} style={{ ...buttonStyle, opacity: isSubmitting ? 0.6 : 1 }}>
+          {isSubmitting
+            ? isEditing
+              ? t('common_saving')
+              : t('common_adding')
+            : isEditing
+              ? t('common_save')
+              : t('wine_save_new')}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} style={buttonStyle}>
-            Peruuta
+            {t('common_cancel')}
           </button>
         )}
       </div>

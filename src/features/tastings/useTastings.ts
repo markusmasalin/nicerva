@@ -21,3 +21,19 @@ export function useCreateTasting() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tastings'] }),
   })
 }
+
+export function useTastingsForWine(wineId: string) {
+  return useQuery({
+    queryKey: ['tastings', 'wine', wineId],
+    queryFn: () => api.getTastingsForWine(wineId),
+    enabled: !!wineId,
+  })
+}
+
+export function useDeleteTasting() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.deleteTasting(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tastings'] }),
+  })
+}

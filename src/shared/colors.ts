@@ -6,4 +6,7 @@ export const COLORS = {
   line: '#E4E1D8',
   textVintage: '#5C584F',
   textPrice: '#A6A296',
+  // Sama sävy jota WINE_TYPE_COLORS.red käyttää — yhteinen viite muualla
+  // käytettäväksi (esim. tähtiarvostelut, valitut tagit).
+  wineRed: '#6E4247',
 }

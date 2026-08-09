@@ -7,6 +7,9 @@ function toTasting(row: Record<string, unknown>): Tasting {
     wineId: row.wine_id as string,
     bottleId: row.bottle_id as string | null,
     rating: row.rating as number | null,
+    score100: row.score_100 as number | null,
+    tags: (row.tags as string[]) ?? [],
+    foodPairing: row.food_pairing as string | null,
     note: row.note as string | null,
     tastedAt: row.tasted_at as string,
   }
@@ -17,6 +20,9 @@ function toRow(tasting: NewTasting) {
     wine_id: tasting.wineId,
     bottle_id: tasting.bottleId,
     rating: tasting.rating,
+    score_100: tasting.score100,
+    tags: tasting.tags,
+    food_pairing: tasting.foodPairing,
     note: tasting.note,
     tasted_at: tasting.tastedAt,
   }
@@ -26,6 +32,22 @@ export async function createTasting(tasting: NewTasting): Promise<Tasting> {
   const { data, error } = await supabase.from('tastings').insert(toRow(tasting)).select().single()
   if (error) throw error
   return toTasting(data)
+}
+
+// Kaikki maistelut yhdelle wine-riville (yksi vuosikerta), uusin ensin.
+export async function getTastingsForWine(wineId: string): Promise<Tasting[]> {
+  const { data, error } = await supabase
+    .from('tastings')
+    .select('*')
+    .eq('wine_id', wineId)
+    .order('tasted_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map(toTasting)
+}
+
+export async function deleteTasting(id: string): Promise<void> {
+  const { error } = await supabase.from('tastings').delete().eq('id', id)
+  if (error) throw error
 }
 
 // Yksittäisen wine_id:n (yhden vuosikerran) keskiarvo — sama malli kuin

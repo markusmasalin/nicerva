@@ -5,6 +5,7 @@ import { useCreateBottle } from '../features/inventory'
 import { Modal } from '../shared/Modal'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../shared/fieldStyles'
 import { COLORS } from '../shared/colors'
+import { useTranslation } from './LanguageContext'
 
 type Props = {
   mode: 'edit' | 'create'
@@ -23,6 +24,7 @@ const buttonStyle: CSSProperties = {
 }
 
 export function VintageModal({ mode, wine, groupTemplate, onClose }: Props) {
+  const t = useTranslation()
   const [vintage, setVintage] = useState(wine?.vintage != null ? String(wine.vintage) : '')
   const [grapesInput, setGrapesInput] = useState(wine?.grapes.join(', ') ?? '')
   const [saving, setSaving] = useState(false)
@@ -72,14 +74,14 @@ export function VintageModal({ mode, wine, groupTemplate, onClose }: Props) {
   }
 
   return (
-    <Modal title={mode === 'edit' ? 'Muokkaa vuosikertaa' : 'Lisää vuosikerta'} onClose={onClose}>
+    <Modal title={mode === 'edit' ? t('vintage_modal_edit_title') : t('vintage_modal_create_title')} onClose={onClose}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Vuosikerta</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_vintage_label')}</div>
           <input type="number" value={vintage} onChange={(e) => setVintage(e.target.value)} style={FIELD_STYLE} />
         </label>
         <label>
-          <div style={FIELD_LABEL_STYLE}>Rypäleet</div>
+          <div style={FIELD_LABEL_STYLE}>{t('wine_grapes_label')}</div>
           <input
             placeholder="Pilkulla eroteltuna"
             value={grapesInput}
@@ -89,11 +91,11 @@ export function VintageModal({ mode, wine, groupTemplate, onClose }: Props) {
         </label>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button type="submit" disabled={saving} style={buttonStyle}>
-            Tallenna
+          <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
+            {saving ? t('common_saving') : t('common_save')}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
-            Peruuta
+            {t('common_cancel')}
           </button>
         </div>
       </form>
