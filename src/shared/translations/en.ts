@@ -111,9 +111,7 @@ export const en = {
   confirm_delete_bottle: 'Delete this bottle?',
   confirm_delete_tasting: 'Delete this tasting?',
 
-  view_geographic: 'Geographic',
   view_appellation: 'Appellation',
-  view_geo_appellation: 'Geographic + Appellation',
   view_producer: 'Producer',
   view_price: 'Price',
 

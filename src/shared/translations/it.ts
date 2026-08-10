@@ -111,9 +111,7 @@ export const it = {
   confirm_delete_bottle: 'Eliminare questa bottiglia?',
   confirm_delete_tasting: 'Eliminare questa degustazione?',
 
-  view_geographic: 'Geografico',
   view_appellation: 'Denominazione',
-  view_geo_appellation: 'Geografico + Denominazione',
   view_producer: 'Produttore',
   view_price: 'Prezzo',
 

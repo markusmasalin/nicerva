@@ -128,20 +128,26 @@ function VintageColumn({ wine, bottleCounts, averagePrices }: VintageColumnProps
 
 type NameGroupBlockProps = {
   group: NameProducerGroup
+  viewMode: GroupingMode
   bottleCounts: Record<string, number>
   averagePrices: Record<string, number>
   truncateName: boolean
   onOpenWine: (identity: { name: string; producer: string }) => void
 }
 
-function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOpenWine }: NameGroupBlockProps) {
+// Rivejä jätetään pois kun sama tieto on jo ryhmän otsikkona (GroupBranch):
+// tuottaja-tila piilottaa tuottajarivin, appellaatio-tila hyppää appellaation
+// yli subtitle-varajärjestyksessä. Koskee sekä yhden että usean vuosikerran
+// ryhmiä, koska molemmat käyttävät samaa otsikkolohkoa.
+function NameGroupBlock({ group, viewMode, bottleCounts, averagePrices, truncateName, onOpenWine }: NameGroupBlockProps) {
   const isMultiVintage = group.wines.length > 1
 
   const truncateStyle: CSSProperties = truncateName
     ? { maxWidth: '140px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
     : {}
 
-  const subtitle = group.appellation || (group.grapes.length > 0 ? group.grapes.join(', ') : group.type)
+  const grapesOrType = group.grapes.length > 0 ? group.grapes.join(', ') : group.type
+  const subtitle = viewMode === 'appellation' ? grapesOrType : group.appellation || grapesOrType
 
   return (
     <div
@@ -152,12 +158,14 @@ function NameGroupBlock({ group, bottleCounts, averagePrices, truncateName, onOp
         <div title={group.name} style={{ color: COLORS.text, fontSize: '16px', ...truncateStyle }}>
           {group.name}
         </div>
-        <div
-          title={group.producer}
-          style={{ color: COLORS.textMuted, fontSize: '13px', marginTop: '2px', ...truncateStyle }}
-        >
-          {group.producer}
-        </div>
+        {viewMode !== 'producer' && (
+          <div
+            title={group.producer}
+            style={{ color: COLORS.textMuted, fontSize: '13px', marginTop: '2px', ...truncateStyle }}
+          >
+            {group.producer}
+          </div>
+        )}
         {subtitle && (
           <div title={subtitle} style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: '2px', ...truncateStyle }}>
             {subtitle}
@@ -204,6 +212,7 @@ function GroupBranchBody({ node, depth, viewMode, bottleCounts, averagePrices, o
           <NameGroupBlock
             key={group.key}
             group={group}
+            viewMode={viewMode}
             bottleCounts={bottleCounts}
             averagePrices={averagePrices}
             truncateName={node.nameGroups!.length > 1}
@@ -231,19 +240,25 @@ function GroupBranchBody({ node, depth, viewMode, bottleCounts, averagePrices, o
 }
 
 // Ylin taso (depth 0) saa aina samat ison otsikon + pystyviivan + mahdollisen
-// lippuraidan kuin aiempi maa-taso teki — riippumatta siitä mitä se
-// grouping-tilassa tarkoittaa (maa, appellaatio, tuottaja, hintaluokka).
-// Lippuraita näkyy vain jos key sattuu täsmäämään COUNTRY_FLAG_COLORS-
-// avaimeen, joten se ei koskaan renderöidy muissa tiloissa kuin geographic/
-// geo_appellation. Syvemmät tasot (depth >= 1) käyttävät aiempaa
-// alue-tyyliä (pienempi otsikko + alaviiva-erotin).
+// lippuraidan kuin maa-taso teki — riippumatta siitä mitä se grouping-tilassa
+// tarkoittaa (maa tai hintaluokka). Lippuraita näkyy vain jos key sattuu
+// täsmäämään COUNTRY_FLAG_COLORS-avaimeen, joten se ei koskaan renderöidy
+// price-tilassa. Syvemmät tasot (depth >= 1) käyttävät aiempaa alue-tyyliä
+// (pienempi otsikko + alaviiva-erotin).
+//
+// ProducerRatingBadge kuuluu tuottaja-tason riville — ei maa- tai alue-
+// tasolle. Tuottaja on aina se GroupNode, jolla on nameGroups (lehtitaso),
+// joten tunnistus ei riipu syvyydestä: producer-tilassa vain tuottajataso on
+// lehti, maa/alue-tasoilla nameGroups on null.
 function GroupBranch(props: GroupBranchProps) {
   const { node, depth, viewMode } = props
   const t = useTranslation()
 
+  const wineIds = node.nameGroups ? node.nameGroups.flatMap((group) => group.wines.map((wine) => wine.id)) : []
+  const showProducerBadge = viewMode === 'producer' && node.nameGroups != null
+
   if (depth === 0) {
     const flagColors = COUNTRY_FLAG_COLORS[node.key]
-    const wineIds = node.nameGroups ? node.nameGroups.flatMap((group) => group.wines.map((wine) => wine.id)) : []
 
     return (
       <div style={{ position: 'relative', paddingLeft: '1rem', marginBottom: '37px' }}>
@@ -262,7 +277,7 @@ function GroupBranch(props: GroupBranchProps) {
           <span style={{ fontSize: '14px', color: COLORS.textMuted }}>
             {node.totalBottles} {t('collection_bottles_suffix')}
           </span>
-          {viewMode === 'producer' && <ProducerRatingBadge wineIds={wineIds} />}
+          {showProducerBadge && <ProducerRatingBadge wineIds={wineIds} />}
         </div>
         {flagColors && (
           <div style={{ display: 'flex', height: '2px', width: '64px', marginBottom: '14px' }}>
@@ -289,6 +304,7 @@ function GroupBranch(props: GroupBranchProps) {
         <span style={{ fontSize: '14px', color: COLORS.textMuted }}>
           {node.totalBottles} {t('collection_bottles_suffix')}
         </span>
+        {showProducerBadge && <ProducerRatingBadge wineIds={wineIds} />}
       </div>
       <GroupBranchBody {...props} />
     </div>

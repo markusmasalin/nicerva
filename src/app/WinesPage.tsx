@@ -24,9 +24,7 @@ import { JustAddedToast } from './JustAddedToast'
 import { useTranslation } from './LanguageContext'
 
 const VIEW_MODES: { mode: GroupingMode; labelKey: TranslationKey }[] = [
-  { mode: 'geographic', labelKey: 'view_geographic' },
   { mode: 'appellation', labelKey: 'view_appellation' },
-  { mode: 'geo_appellation', labelKey: 'view_geo_appellation' },
   { mode: 'producer', labelKey: 'view_producer' },
   { mode: 'price', labelKey: 'view_price' },
 ]
@@ -116,7 +114,7 @@ export function WinesPage() {
   )
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const [viewMode, setViewMode] = useState<GroupingMode>('geographic')
+  const [viewMode, setViewMode] = useState<GroupingMode>('appellation')
   const [detailIdentity, setDetailIdentity] = useState<{ name: string; producer: string } | null>(null)
   const [justAdded, setJustAdded] = useState<{ name: string; type: string } | null>(null)
   const frontScanInputRef = useRef<HTMLInputElement>(null)

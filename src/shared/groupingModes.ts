@@ -3,7 +3,7 @@ import type { LanguageCode } from './countries'
 import { getCountryName } from './countries'
 import { TRANSLATIONS, type TranslationKey } from './translations'
 
-export type GroupingMode = 'geographic' | 'appellation' | 'geo_appellation' | 'producer' | 'price'
+export type GroupingMode = 'appellation' | 'producer' | 'price'
 
 // Price-tason key-funktio tarvitsee averagePrices-datan, jota pelkkä
 // Wine-olio ei sisällä — muut tasot eivät käytä tätä lainkaan.
@@ -20,10 +20,9 @@ function translate(language: LanguageCode, key: TranslationKey): string {
   return TRANSLATIONS[language][key] ?? TRANSLATIONS.fi[key] ?? key
 }
 
-const geographicLevels: GroupLevel[] = [
-  { key: (wine) => wine.country, label: (key, language) => getCountryName(key, language) },
-  { key: (wine) => wine.region, label: (key) => key },
-]
+// Appellaatio- ja tuottajanäkymät jakavat saman maa→alue-henkarin.
+const COUNTRY_LEVEL: GroupLevel = { key: (wine) => wine.country, label: (key, language) => getCountryName(key, language) }
+const REGION_LEVEL: GroupLevel = { key: (wine) => wine.region, label: (key) => key }
 
 function appellationKey(wine: Wine): string {
   return wine.appellation?.trim() || ''
@@ -33,11 +32,9 @@ function appellationLabel(key: string, language: LanguageCode): string {
   return key || translate(language, 'grouping_other')
 }
 
-const appellationLevels: GroupLevel[] = [{ key: appellationKey, label: appellationLabel }]
+const appellationLevels: GroupLevel[] = [COUNTRY_LEVEL, REGION_LEVEL, { key: appellationKey, label: appellationLabel }]
 
-const geoAppellationLevels: GroupLevel[] = [...geographicLevels, { key: appellationKey, label: appellationLabel }]
-
-const producerLevels: GroupLevel[] = [{ key: (wine) => wine.producer, label: (key) => key }]
+const producerLevels: GroupLevel[] = [COUNTRY_LEVEL, REGION_LEVEL, { key: (wine) => wine.producer, label: (key) => key }]
 
 const PRICE_UNDER_20 = 'under_20'
 const PRICE_20_TO_50 = '20_50'
@@ -69,9 +66,7 @@ function priceBucketLabel(key: string, language: LanguageCode): string {
 const priceLevels: GroupLevel[] = [{ key: priceBucketKey, label: priceBucketLabel }]
 
 export const GROUP_LEVELS: Record<GroupingMode, GroupLevel[]> = {
-  geographic: geographicLevels,
   appellation: appellationLevels,
-  geo_appellation: geoAppellationLevels,
   producer: producerLevels,
   price: priceLevels,
 }

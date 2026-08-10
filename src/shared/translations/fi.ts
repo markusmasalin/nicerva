@@ -111,9 +111,7 @@ export const fi = {
   confirm_delete_bottle: 'Poistetaanko tämä pullo?',
   confirm_delete_tasting: 'Poistetaanko tämä maistelu?',
 
-  view_geographic: 'Maantieteellinen',
   view_appellation: 'Appellaatio',
-  view_geo_appellation: 'Maantiede + Appellaatio',
   view_producer: 'Tuottaja',
   view_price: 'Hinta',
 
