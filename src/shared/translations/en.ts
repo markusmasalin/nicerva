@@ -110,4 +110,26 @@ export const en = {
   confirm_delete_vintage: 'Delete this vintage?',
   confirm_delete_bottle: 'Delete this bottle?',
   confirm_delete_tasting: 'Delete this tasting?',
+
+  view_geographic: 'Geographic',
+  view_appellation: 'Appellation',
+  view_geo_appellation: 'Geographic + Appellation',
+  view_producer: 'Producer',
+  view_price: 'Price',
+
+  grouping_other: 'Other',
+
+  price_bucket_under_20: 'under €20',
+  price_bucket_20_to_50: '€20–50',
+  price_bucket_50_to_100: '€50–100',
+  price_bucket_over_100: 'over €100',
+  price_bucket_unknown: 'Unknown',
+
+  onboarding_tip_add_title: 'Add your first wine',
+  onboarding_tip_add_body:
+    'Scan the label or add details manually — each wine can have multiple vintages, and each vintage can have several bottles.',
+  onboarding_tip_edit_title: 'Editing',
+  onboarding_tip_edit_body: 'Open any wine and tap "Edit" — you can fix details, add a photo, or remove bottles.',
+  onboarding_tip_open_title: 'Opening a bottle',
+  onboarding_tip_open_body: 'When you drink a bottle, tap "Open bottle" — you can rate it and leave a note at the same time.',
 }

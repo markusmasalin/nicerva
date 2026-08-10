@@ -110,4 +110,26 @@ export const it = {
   confirm_delete_vintage: 'Eliminare questa annata?',
   confirm_delete_bottle: 'Eliminare questa bottiglia?',
   confirm_delete_tasting: 'Eliminare questa degustazione?',
+
+  view_geographic: 'Geografico',
+  view_appellation: 'Denominazione',
+  view_geo_appellation: 'Geografico + Denominazione',
+  view_producer: 'Produttore',
+  view_price: 'Prezzo',
+
+  grouping_other: 'Altro',
+
+  price_bucket_under_20: 'meno di 20€',
+  price_bucket_20_to_50: '20–50€',
+  price_bucket_50_to_100: '50–100€',
+  price_bucket_over_100: 'oltre 100€',
+  price_bucket_unknown: 'Sconosciuto',
+
+  onboarding_tip_add_title: 'Aggiungi il tuo primo vino',
+  onboarding_tip_add_body:
+    'Scansiona l\'etichetta o inserisci i dati manualmente — ogni vino può avere più annate, e ogni annata più bottiglie.',
+  onboarding_tip_edit_title: 'Modifica',
+  onboarding_tip_edit_body: 'Apri un vino e tocca "Modifica" — puoi correggere i dati, aggiungere una foto o rimuovere bottiglie.',
+  onboarding_tip_open_title: 'Aprire una bottiglia',
+  onboarding_tip_open_body: 'Quando bevi una bottiglia, tocca "Apri bottiglia" — puoi valutarla e lasciare una nota.',
 }

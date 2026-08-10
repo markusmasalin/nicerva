@@ -14,12 +14,22 @@ import { ensureProducer } from '../features/producers'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
 import { similarity } from '../shared/textSimilarity'
+import { GROUP_LEVELS, type GroupingMode } from '../shared/groupingModes'
+import type { TranslationKey } from '../shared/translations'
 import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
 import { DuplicateBottleModal } from './DuplicateBottleModal'
 import { JustAddedToast } from './JustAddedToast'
 import { useTranslation } from './LanguageContext'
+
+const VIEW_MODES: { mode: GroupingMode; labelKey: TranslationKey }[] = [
+  { mode: 'geographic', labelKey: 'view_geographic' },
+  { mode: 'appellation', labelKey: 'view_appellation' },
+  { mode: 'geo_appellation', labelKey: 'view_geo_appellation' },
+  { mode: 'producer', labelKey: 'view_producer' },
+  { mode: 'price', labelKey: 'view_price' },
+]
 
 const SCANNED_WINE_DEFAULTS: NewWine = {
   name: '',
@@ -106,12 +116,16 @@ export function WinesPage() {
   )
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<GroupingMode>('geographic')
   const [detailIdentity, setDetailIdentity] = useState<{ name: string; producer: string } | null>(null)
   const [justAdded, setJustAdded] = useState<{ name: string; type: string } | null>(null)
   const frontScanInputRef = useRef<HTMLInputElement>(null)
   const backScanInputRef = useRef<HTMLInputElement>(null)
 
   const { data: wines = [] } = useWines(filters)
+  // Erillinen, suodattamaton kysely — päättää ison NICERVA-otsikon
+  // näkyvyyden koko kokoelman koon perusteella, ei nykyisen hakutuloksen.
+  const { data: allWines = [], isLoading: allWinesLoading } = useWines()
   const { data: bottleCounts = {} } = useBottleCounts()
   const createWine = useCreateWine()
   const updateWine = useUpdateWine()
@@ -233,10 +247,12 @@ export function WinesPage() {
   return (
     <>
       <div className="page-container">
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{ margin: 0, letterSpacing: '0.05em', color: COLORS.text }}>NICERVA</h1>
-          <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>{t('login_subtitle')}</p>
-        </div>
+        {!allWinesLoading && allWines.length === 0 && (
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ margin: 0, letterSpacing: '0.05em', color: COLORS.text }}>NICERVA</h1>
+            <p style={{ margin: '0.25rem 0 0', color: COLORS.textMuted }}>{t('login_subtitle')}</p>
+          </div>
+        )}
 
         <div
           style={{
@@ -285,6 +301,33 @@ export function WinesPage() {
           />
         </div>
 
+        <div
+          style={{
+            display: 'flex',
+            gap: '16px',
+            flexWrap: 'wrap',
+            paddingBottom: '12px',
+            marginBottom: '24px',
+            borderBottom: `1px solid ${COLORS.line}`,
+          }}
+        >
+          {VIEW_MODES.map(({ mode, labelKey }) => (
+            <span
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                fontSize: '12px',
+                cursor: 'pointer',
+                padding: '8px 4px',
+                color: viewMode === mode ? COLORS.text : COLORS.textMuted,
+                borderBottom: viewMode === mode ? `2px solid ${COLORS.text}` : '2px solid transparent',
+              }}
+            >
+              {t(labelKey)}
+            </span>
+          ))}
+        </div>
+
         {scanning && (
           <p style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: 0 }}>{t('collection_identifying')}</p>
         )}
@@ -305,7 +348,12 @@ export function WinesPage() {
 
         {countriesWithBottles.size >= 2 && <CollectionOverview wines={wines} bottleCounts={bottleCounts} />}
 
-        <CollectionView filters={filters} onOpenWine={(identity) => setDetailIdentity(identity)} />
+        <CollectionView
+          filters={filters}
+          groupLevels={GROUP_LEVELS[viewMode]}
+          viewMode={viewMode}
+          onOpenWine={(identity) => setDetailIdentity(identity)}
+        />
       </div>
 
       {showScanPreview && scannedFrontImage && (

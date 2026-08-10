@@ -110,4 +110,26 @@ export const fi = {
   confirm_delete_vintage: 'Poistetaanko tämä vuosikerta?',
   confirm_delete_bottle: 'Poistetaanko tämä pullo?',
   confirm_delete_tasting: 'Poistetaanko tämä maistelu?',
+
+  view_geographic: 'Maantieteellinen',
+  view_appellation: 'Appellaatio',
+  view_geo_appellation: 'Maantiede + Appellaatio',
+  view_producer: 'Tuottaja',
+  view_price: 'Hinta',
+
+  grouping_other: 'Muu',
+
+  price_bucket_under_20: 'alle 20€',
+  price_bucket_20_to_50: '20–50€',
+  price_bucket_50_to_100: '50–100€',
+  price_bucket_over_100: 'yli 100€',
+  price_bucket_unknown: 'Tuntematon',
+
+  onboarding_tip_add_title: 'Lisää ensimmäinen viinisi',
+  onboarding_tip_add_body:
+    'Skannaa pullon etiketti tai lisää tiedot käsin — jokainen viini voi sisältää useita vuosikertoja, ja jokaisella vuosikerralla voi olla useampi pullo.',
+  onboarding_tip_edit_title: 'Muokkaaminen',
+  onboarding_tip_edit_body: 'Avaa mikä tahansa viini ja paina "Muokkaa" — voit korjata tietoja, lisätä kuvan tai poistaa pulloja.',
+  onboarding_tip_open_title: 'Pullon avaaminen',
+  onboarding_tip_open_body: 'Kun juot pullon, paina "Avaa pullo" — voit samalla antaa arvion ja jättää muistiinpanon.',
 }
