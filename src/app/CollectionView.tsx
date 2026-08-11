@@ -33,7 +33,7 @@ type GroupNode = {
   children: GroupNode[]
 }
 
-function buildNameGroups(wines: Wine[], bottleCounts: Record<string, number>): NameProducerGroup[] {
+function buildNameGroups(wines: Wine[]): NameProducerGroup[] {
   const nameMap = new Map<string, NameProducerGroup>()
 
   for (const wine of wines) {
@@ -85,7 +85,7 @@ function buildGroups(
       key,
       label: level.label(key, language),
       totalBottles,
-      nameGroups: isLeaf ? buildNameGroups(groupWines, bottleCounts) : null,
+      nameGroups: isLeaf ? buildNameGroups(groupWines) : null,
       children: isLeaf ? [] : buildGroups(groupWines, bottleCounts, rest, language, context),
     })
   }
