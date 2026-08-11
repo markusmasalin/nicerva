@@ -327,7 +327,50 @@ export function WinesPage() {
         </div>
 
         {scanning && (
-          <p style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: 0 }}>{t('collection_identifying')}</p>
+          <>
+            <style>{`
+              @keyframes scan-spinner-spin {
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 200,
+                padding: '16px',
+              }}
+            >
+              <div
+                style={{
+                  background: COLORS.bg,
+                  color: COLORS.text,
+                  borderRadius: '12px',
+                  padding: '32px 40px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '16px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    border: `3px solid ${COLORS.line}`,
+                    borderTopColor: COLORS.wineRed,
+                    animation: 'scan-spinner-spin 0.8s linear infinite',
+                  }}
+                />
+                <span style={{ color: COLORS.text, fontSize: '17px' }}>{t('collection_identifying')}</span>
+              </div>
+            </div>
+          </>
         )}
 
         {showFilters && <WineFilters filters={filters} onChange={setFilters} />}
