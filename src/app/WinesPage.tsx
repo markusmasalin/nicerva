@@ -8,26 +8,19 @@ import {
   WineForm,
   WineFilters,
 } from '../features/wines'
-import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo } from '../features/wines'
+import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo, WineType } from '../features/wines'
 import { useCreateBottle, useBottleCounts } from '../features/inventory'
 import { ensureProducer } from '../features/producers'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
 import { similarity } from '../shared/textSimilarity'
 import { GROUP_LEVELS, type GroupingMode } from '../shared/groupingModes'
-import type { TranslationKey } from '../shared/translations'
 import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
 import { DuplicateBottleModal } from './DuplicateBottleModal'
 import { JustAddedToast } from './JustAddedToast'
 import { useTranslation } from './LanguageContext'
-
-const VIEW_MODES: { mode: GroupingMode; labelKey: TranslationKey }[] = [
-  { mode: 'appellation', labelKey: 'view_appellation' },
-  { mode: 'producer', labelKey: 'view_producer' },
-  { mode: 'price', labelKey: 'view_price' },
-]
 
 const SCANNED_WINE_DEFAULTS: NewWine = {
   name: '',
@@ -49,6 +42,82 @@ const buttonStyle: CSSProperties = {
   fontSize: '13px',
   padding: '6px 12px',
   cursor: 'pointer',
+}
+
+type StatCardProps = {
+  // Ei vielä käytössä (kaksi lukua ei tällä hetkellä näytä ikonia), mutta
+  // laatikko renderöidään silti kiinteällä korkeudella jotta rakenne on
+  // valmiiksi laajennettavissa jos ikoni lisätään myöhemmin.
+  icon?: string
+  value: number
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+// Kiinteäkorkuinen ikonilaatikko (height 20px, keskitetty flexillä) estää
+// numeroiden epätasaisen pystyasettelun eri korttien välillä, koska emojien
+// oma render-korkeus vaihtelee merkistä toiseen.
+function StatCard({ icon, value, label, active, onClick }: StatCardProps) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        textAlign: 'center',
+        cursor: 'pointer',
+        padding: '8px 4px 10px',
+        borderBottom: active ? `2px solid ${COLORS.text}` : '2px solid transparent',
+      }}
+    >
+      <div style={{ height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+        {icon}
+      </div>
+      <div style={{ fontSize: '20px', color: COLORS.text, marginTop: '4px' }}>{value}</div>
+      <div
+        style={{
+          fontSize: '10px',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: COLORS.textMuted,
+          marginTop: '2px',
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  )
+}
+
+type IconActionProps = {
+  icon: string
+  title: string
+  active?: boolean
+  onClick: () => void
+}
+
+// Neljän ikonin rivi kahden luvun alla: €/♥ vaihtavat viewMode:a, 🍷/🛍
+// eivät tee vielä mitään paitsi näyttävät "Tulossa pian" -ilmoituksen
+// (title-attribuutti hoitaa työpöytä-hoverin, klikkaus mobiilissa).
+function IconAction({ icon, title, active, onClick }: IconActionProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      style={{
+        border: 'none',
+        background: 'transparent',
+        cursor: 'pointer',
+        fontSize: '20px',
+        padding: '8px 4px',
+        lineHeight: 1,
+        borderBottom: active ? `2px solid ${COLORS.text}` : '2px solid transparent',
+      }}
+    >
+      {icon}
+    </button>
+  )
 }
 
 // Muuntaa identify-wine-funktion tunnistaman viinin lomakkeen
@@ -114,9 +183,11 @@ export function WinesPage() {
   )
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [showAddMenu, setShowAddMenu] = useState(false)
+  const [comingSoonVisible, setComingSoonVisible] = useState(false)
   const [viewMode, setViewMode] = useState<GroupingMode>('appellation')
   const [detailIdentity, setDetailIdentity] = useState<{ name: string; producer: string } | null>(null)
-  const [justAdded, setJustAdded] = useState<{ name: string; type: string } | null>(null)
+  const [justAdded, setJustAdded] = useState<{ name: string; type: WineType } | null>(null)
   const frontScanInputRef = useRef<HTMLInputElement>(null)
   const backScanInputRef = useRef<HTMLInputElement>(null)
 
@@ -140,6 +211,11 @@ export function WinesPage() {
     setScanDraft(null)
     setScannedFrontImage(null)
     setScannedBackImage(null)
+  }
+
+  function showComingSoon() {
+    setComingSoonVisible(true)
+    setTimeout(() => setComingSoonVisible(false), 2000)
   }
 
   function handleFrontImageSelected(e: ChangeEvent<HTMLInputElement>) {
@@ -242,6 +318,8 @@ export function WinesPage() {
     wines.filter((wine) => (bottleCounts[wine.id] ?? 0) > 0).map((wine) => wine.country),
   )
 
+  const producerCount = new Set(wines.map((wine) => wine.producer)).size
+
   return (
     <>
       <div className="page-container">
@@ -252,43 +330,39 @@ export function WinesPage() {
           </div>
         )}
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '16px',
-            paddingBottom: '12px',
-            marginBottom: '24px',
-            borderBottom: `1px solid ${COLORS.line}`,
-          }}
-        >
-          <span
-            onClick={() => setShowFilters((current) => !current)}
-            style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
-          >
-            {t('collection_filter_link')}
-          </span>
-          <span
-            onClick={() => {
-              setScanDraft(null)
-              setScannedFrontImage(null)
-              setScannedBackImage(null)
-              setShowScanPreview(false)
-              setDuplicateMatch(null)
-              setDuplicateCandidate(null)
-              setEditing(null)
-              setShowForm(true)
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+          <input
+            placeholder={t('filters_search_placeholder')}
+            value={filters.search ?? ''}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value || undefined })}
+            style={{
+              flex: 1,
+              border: 'none',
+              borderBottom: `0.5px solid ${COLORS.line}`,
+              background: 'transparent',
+              color: COLORS.text,
+              colorScheme: 'light',
+              fontSize: '14px',
+              padding: '6px 2px',
             }}
-            style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowFilters((current) => !current)}
+            aria-label={t('collection_filter_link')}
+            title={t('collection_filter_link')}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '4px',
+              lineHeight: 1,
+              opacity: showFilters ? 1 : 0.7,
+            }}
           >
-            {t('collection_add_wine_link')}
-          </span>
-          <span
-            onClick={() => frontScanInputRef.current?.click()}
-            style={{ color: COLORS.textMuted, fontSize: '12px', cursor: 'pointer', padding: '8px 4px' }}
-          >
-            {t('collection_scan_wine_link')}
-          </span>
+            ⚙️
+          </button>
           <input
             ref={frontScanInputRef}
             type="file"
@@ -299,31 +373,47 @@ export function WinesPage() {
           />
         </div>
 
+        {showFilters && (
+          <div style={{ marginBottom: '16px' }}>
+            <WineFilters filters={filters} onChange={setFilters} hideSearch />
+          </div>
+        )}
+
         <div
           style={{
-            display: 'flex',
-            gap: '16px',
-            flexWrap: 'wrap',
-            paddingBottom: '12px',
+            paddingBottom: '8px',
             marginBottom: '24px',
             borderBottom: `1px solid ${COLORS.line}`,
           }}
         >
-          {VIEW_MODES.map(({ mode, labelKey }) => (
-            <span
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              style={{
-                fontSize: '12px',
-                cursor: 'pointer',
-                padding: '8px 4px',
-                color: viewMode === mode ? COLORS.text : COLORS.textMuted,
-                borderBottom: viewMode === mode ? `2px solid ${COLORS.text}` : '2px solid transparent',
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+            <StatCard
+              value={wines.length}
+              label={t('stats_bottles_label')}
+              active={viewMode === 'appellation'}
+              onClick={() => {
+                setFilters({})
+                setViewMode('appellation')
               }}
-            >
-              {t(labelKey)}
-            </span>
-          ))}
+            />
+            <StatCard
+              value={producerCount}
+              label={t('stats_producers_label')}
+              active={viewMode === 'producer'}
+              onClick={() => setViewMode('producer')}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '28px', marginTop: '4px' }}>
+            <IconAction icon="€" title={t('view_price')} active={viewMode === 'price'} onClick={() => setViewMode('price')} />
+            <IconAction icon="♥" title={t('view_liked')} active={viewMode === 'liked'} onClick={() => setViewMode('liked')} />
+            <IconAction icon="🍷" title={t('coming_soon_label')} onClick={showComingSoon} />
+            <IconAction icon="🛍" title={t('coming_soon_label')} onClick={showComingSoon} />
+          </div>
+          {comingSoonVisible && (
+            <div style={{ textAlign: 'center', fontSize: '12px', color: COLORS.textMuted, marginTop: '6px' }}>
+              {t('coming_soon_label')}
+            </div>
+          )}
         </div>
 
         {scanning && (
@@ -372,8 +462,6 @@ export function WinesPage() {
             </div>
           </>
         )}
-
-        {showFilters && <WineFilters filters={filters} onChange={setFilters} />}
 
         {showForm && (
           <Modal title={t('wine_add_modal_title')} onClose={resetFormState}>
@@ -479,6 +567,78 @@ export function WinesPage() {
           }}
         />
       )}
+
+      {showAddMenu && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '92px',
+            right: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            background: COLORS.bg,
+            border: `1px solid ${COLORS.line}`,
+            borderRadius: '8px',
+            padding: '8px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
+            zIndex: 150,
+          }}
+        >
+          <span
+            onClick={() => {
+              setShowAddMenu(false)
+              frontScanInputRef.current?.click()
+            }}
+            style={{ color: COLORS.text, fontSize: '13px', cursor: 'pointer', padding: '8px 12px', whiteSpace: 'nowrap' }}
+          >
+            {t('collection_scan_wine_link')}
+          </span>
+          <span
+            onClick={() => {
+              setShowAddMenu(false)
+              setScanDraft(null)
+              setScannedFrontImage(null)
+              setScannedBackImage(null)
+              setShowScanPreview(false)
+              setDuplicateMatch(null)
+              setDuplicateCandidate(null)
+              setEditing(null)
+              setShowForm(true)
+            }}
+            style={{ color: COLORS.text, fontSize: '13px', cursor: 'pointer', padding: '8px 12px', whiteSpace: 'nowrap' }}
+          >
+            {t('collection_add_wine_link')}
+          </span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setShowAddMenu((current) => !current)}
+        aria-label={t('wine_add_modal_title')}
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          border: 'none',
+          background: COLORS.wineRed,
+          color: '#FFFFFF',
+          fontSize: '28px',
+          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          zIndex: 150,
+        }}
+      >
+        +
+      </button>
 
       {justAdded && <JustAddedToast name={justAdded.name} type={justAdded.type} />}
     </>

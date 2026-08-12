@@ -17,9 +17,10 @@ const fieldStyle: CSSProperties = {
 type Props = {
   filters: WineFilterParams
   onChange: (filters: WineFilterParams) => void
+  hideSearch?: boolean
 }
 
-export function WineFilters({ filters, onChange }: Props) {
+export function WineFilters({ filters, onChange, hideSearch }: Props) {
   const t = useTranslation()
 
   function updateText(key: keyof WineFilterParams, value: string) {
@@ -28,12 +29,14 @@ export function WineFilters({ filters, onChange }: Props) {
 
   return (
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-      <input
-        placeholder={t('filters_search_placeholder')}
-        value={filters.search ?? ''}
-        onChange={(e) => updateText('search', e.target.value)}
-        style={fieldStyle}
-      />
+      {!hideSearch && (
+        <input
+          placeholder={t('filters_search_placeholder')}
+          value={filters.search ?? ''}
+          onChange={(e) => updateText('search', e.target.value)}
+          style={fieldStyle}
+        />
+      )}
       <CountryPicker
         value={filters.country ?? null}
         onChange={(code) => onChange({ ...filters, country: code ?? undefined })}

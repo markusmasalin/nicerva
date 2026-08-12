@@ -3,7 +3,7 @@ import type { LanguageCode } from './countries'
 import { getCountryName } from './countries'
 import { TRANSLATIONS, type TranslationKey } from './translations'
 
-export type GroupingMode = 'appellation' | 'producer' | 'price'
+export type GroupingMode = 'appellation' | 'producer' | 'price' | 'liked'
 
 // Price-tason key-funktio tarvitsee averagePrices-datan, jota pelkkä
 // Wine-olio ei sisällä — muut tasot eivät käytä tätä lainkaan.
@@ -65,8 +65,12 @@ function priceBucketLabel(key: string, language: LanguageCode): string {
 
 const priceLevels: GroupLevel[] = [{ key: priceBucketKey, label: priceBucketLabel }]
 
+// 'liked' on litteä, ryhmittelemätön näkymä (ks. CollectionView.tsx) —
+// se ei kulje buildGroups/GroupBranch-puun kautta ollenkaan, joten tyhjä
+// taulukko on tässä vain rakenteellinen täyte GROUP_LEVELS-tyypille.
 export const GROUP_LEVELS: Record<GroupingMode, GroupLevel[]> = {
   appellation: appellationLevels,
   producer: producerLevels,
   price: priceLevels,
+  liked: [],
 }

@@ -13,6 +13,7 @@ export const fi = {
 
   app_sign_out: 'Kirjaudu ulos',
   app_settings_link: 'Asetukset',
+  app_menu_label: 'Valikko',
 
   login_subtitle: 'Sinun oma viinikellarisi',
 
@@ -23,8 +24,8 @@ export const fi = {
   settings_theme_coming_soon: 'Vaalea/tumma teema — tulossa pian',
 
   collection_filter_link: 'Suodata',
-  collection_add_wine_link: '+ Löysin uuden viinin',
-  collection_scan_wine_link: 'Skannaa pullo',
+  collection_add_wine_link: 'Lisää pullon tiedot itse',
+  collection_scan_wine_link: 'Skannaa pullon tiedot',
   collection_identifying: 'Tunnistetaan...',
   collection_empty_title: 'Kellarisi on vielä tyhjä',
   collection_empty_body: 'Skannaa pullo tai lisää viini käsin aloittaaksesi.',
@@ -34,6 +35,11 @@ export const fi = {
   filters_region_placeholder: 'Alue',
   filters_grape_placeholder: 'Rypäle',
   filters_vintage_placeholder: 'Vuosikerta',
+
+  stats_bottles_label: 'Pulloa',
+  stats_producers_label: 'Tuottajaa',
+
+  coming_soon_label: 'Tulossa pian',
 
   wine_add_image: 'Lisää kuva',
   wine_change_image: 'Vaihda kuva',
@@ -114,6 +120,7 @@ export const fi = {
   view_appellation: 'Appellaatio',
   view_producer: 'Tuottaja',
   view_price: 'Hinta',
+  view_liked: 'Suosikit',
 
   grouping_other: 'Muu',
 

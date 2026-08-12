@@ -14,6 +14,24 @@ export function useGroupAverageRating(wineIds: string[]) {
   })
 }
 
+// Sama laskenta kuin useGroupAverageRating, mutta usealle name+producer-
+// ryhmälle yhdellä kertaa (esim. "liked"-näkymän koko lista) — yksi hook-
+// kutsu jonka sisällä ryhmien haut ajetaan rinnakkain, sen sijaan että
+// hookia kutsuttaisiin kertaalleen per ryhmä (rikkoisi hooks-säännöt listan
+// pituuden vaihdellessa).
+export function useGroupAverageRatings(groups: { key: string; wineIds: string[] }[]) {
+  return useQuery({
+    queryKey: ['tastings', 'group-averages', groups],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        groups.map(async ({ key, wineIds }) => [key, await api.getGroupAverageRating(wineIds)] as const),
+      )
+      return Object.fromEntries(entries) as Record<string, number | null>
+    },
+    enabled: groups.length > 0,
+  })
+}
+
 export function useCreateTasting() {
   const queryClient = useQueryClient()
   return useMutation({

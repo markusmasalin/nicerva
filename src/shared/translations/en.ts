@@ -13,6 +13,7 @@ export const en = {
 
   app_sign_out: 'Sign out',
   app_settings_link: 'Settings',
+  app_menu_label: 'Menu',
 
   login_subtitle: 'Your own wine cellar',
 
@@ -23,8 +24,8 @@ export const en = {
   settings_theme_coming_soon: 'Light/dark theme — coming soon',
 
   collection_filter_link: 'Filter',
-  collection_add_wine_link: '+ Found a new wine',
-  collection_scan_wine_link: 'Scan a bottle',
+  collection_add_wine_link: 'Enter bottle details myself',
+  collection_scan_wine_link: 'Scan bottle details',
   collection_identifying: 'Identifying...',
   collection_empty_title: 'Your cellar is empty',
   collection_empty_body: 'Scan a bottle or add a wine manually to get started.',
@@ -34,6 +35,11 @@ export const en = {
   filters_region_placeholder: 'Region',
   filters_grape_placeholder: 'Grape',
   filters_vintage_placeholder: 'Vintage',
+
+  stats_bottles_label: 'Bottles',
+  stats_producers_label: 'Producers',
+
+  coming_soon_label: 'Coming soon',
 
   wine_add_image: 'Add photo',
   wine_change_image: 'Change photo',
@@ -114,6 +120,7 @@ export const en = {
   view_appellation: 'Appellation',
   view_producer: 'Producer',
   view_price: 'Price',
+  view_liked: 'Favorites',
 
   grouping_other: 'Other',
 

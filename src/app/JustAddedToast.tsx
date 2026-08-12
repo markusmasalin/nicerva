@@ -1,14 +1,17 @@
 import { COLORS } from '../shared/colors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
 import { BottleIcon } from '../shared/BottleIcon'
+import { getBottleShape } from '../shared/bottleShapes'
+import type { WineType } from '../features/wines'
 
 type Props = {
   name: string
-  type: string
+  type: WineType
 }
 
 export function JustAddedToast({ name, type }: Props) {
   const bottleColor = WINE_TYPE_COLORS[type] ?? COLORS.textMuted
+  const shape = getBottleShape({ type })
 
   return (
     <>
@@ -39,7 +42,7 @@ export function JustAddedToast({ name, type }: Props) {
         }}
       >
         <span style={{ color: bottleColor, display: 'flex' }}>
-          <BottleIcon />
+          <BottleIcon shape={shape} />
         </span>
         <span>{name} lisätty kokoelmaan</span>
       </div>

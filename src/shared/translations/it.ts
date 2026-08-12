@@ -13,6 +13,7 @@ export const it = {
 
   app_sign_out: 'Esci',
   app_settings_link: 'Impostazioni',
+  app_menu_label: 'Menu',
 
   login_subtitle: 'La tua cantina personale',
 
@@ -23,8 +24,8 @@ export const it = {
   settings_theme_coming_soon: 'Tema chiaro/scuro — in arrivo',
 
   collection_filter_link: 'Filtra',
-  collection_add_wine_link: '+ Ho trovato un vino',
-  collection_scan_wine_link: 'Scansiona bottiglia',
+  collection_add_wine_link: 'Inserisci i dettagli manualmente',
+  collection_scan_wine_link: 'Scansiona i dettagli della bottiglia',
   collection_identifying: 'Riconoscimento...',
   collection_empty_title: 'La tua cantina è ancora vuota',
   collection_empty_body: 'Scansiona una bottiglia o aggiungi un vino manualmente per iniziare.',
@@ -34,6 +35,11 @@ export const it = {
   filters_region_placeholder: 'Regione',
   filters_grape_placeholder: 'Vitigno',
   filters_vintage_placeholder: 'Annata',
+
+  stats_bottles_label: 'Bottiglie',
+  stats_producers_label: 'Produttori',
+
+  coming_soon_label: 'In arrivo',
 
   wine_add_image: 'Aggiungi foto',
   wine_change_image: 'Cambia foto',
@@ -114,6 +120,7 @@ export const it = {
   view_appellation: 'Denominazione',
   view_producer: 'Produttore',
   view_price: 'Prezzo',
+  view_liked: 'Preferiti',
 
   grouping_other: 'Altro',
 

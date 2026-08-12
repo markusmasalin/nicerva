@@ -4,6 +4,7 @@ export type { Tasting, NewTasting } from './types'
 export {
   useAverageRatingsByWine,
   useGroupAverageRating,
+  useGroupAverageRatings,
   useCreateTasting,
   useTastingsForWine,
   useDeleteTasting,
