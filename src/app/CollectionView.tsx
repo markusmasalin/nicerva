@@ -6,6 +6,7 @@ import { useGroupAverageRating, useGroupAverageRatings } from '../features/tasti
 import { useRegionPhotoManifest, resolveRegionPhotoUrl } from '../features/regions'
 import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
+import { getRegionFallbackColor } from '../shared/regionColors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
 import { BottleIcon } from '../shared/BottleIcon'
 import { getBottleShape } from '../shared/bottleShapes'
@@ -233,15 +234,17 @@ type RegionPhotoBannerProps = {
   totalBottles: number
 }
 
-// Iso, reunasta reunaan ulottuva kansikuva alue-tason ylimpänä näkyvänä
-// elementtinä (maa-taso ei enää renderöi mitään otsikkoa, ks. GroupBranch) —
-// ei enää pyöristetty erillinen kortti, ei marginaaleja. Alueen nimi +
-// pullomäärä ovat nyt osa itse kuvaa (tumma liuku-overlay alareunassa
-// takaa luettavuuden sekä kuvan että yksivärisen varakorin päällä).
+// Kansikuva region-kortin (ks. GroupBranch depth 1) yläosana — ei omaa
+// border-radiusta, koska se perii sen automaattisesti ulomman kortin
+// overflow: hidden + border-radius -yhdistelmästä. Vain yläkulmat pyöristyvät
+// näin, koska kuva ei ole kortin alareunassa (viinilista jatkuu sen alla
+// samassa kortissa). Alueen nimi + pullomäärä ovat osa itse kuvaa (tumma
+// liuku-overlay alareunassa takaa luettavuuden sekä kuvan että yksivärisen
+// varakorin päällä).
 function RegionPhotoBanner({ country, region, manifest, label, totalBottles }: RegionPhotoBannerProps) {
   const t = useTranslation()
   const photoUrl = resolveRegionPhotoUrl(country, region, manifest)
-  const fallbackColor = COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.line
+  const duotoneColor = getRegionFallbackColor(region) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg
 
   return (
     <div
@@ -249,12 +252,28 @@ function RegionPhotoBanner({ country, region, manifest, label, totalBottles }: R
         position: 'relative',
         height: REGION_PHOTO_HEIGHT,
         overflow: 'hidden',
-        backgroundColor: fallbackColor,
+        // Ei omaa taustaväriä — kun kuvaa ei ole, ulomman kortin tausta
+        // (alueen varaväri) näkyy tämän läpi, koska koko kortin tausta on
+        // nyt sama väri, ei vain tämä kuva-alue.
         backgroundImage: photoUrl ? `url(${photoUrl})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
+      {/* Duotone-sävytys kuvan päällä, ALLE tekstin luettavuus-gradientin
+          pinoamisjärjestyksessä — ei koske gradienttiin, vain väliin. Sama
+          alueen varaväri kuin kortin tausta, jotta kuva ja kortti tuntuvat
+          samalta paletilta. mix-blend-mode/opacity ovat lähtöarvauksia,
+          tarkoituksella tarkistettava silmämääräisesti ja säädettävä. */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: duotoneColor,
+          mixBlendMode: 'color',
+          opacity: 0.6,
+        }}
+      />
       <div
         style={{
           position: 'absolute',
@@ -345,10 +364,12 @@ function GroupBranchBody({
 // vanha iso otsikko + mahdollinen lippuraita, koska se on ainoa näkyvä
 // taso siinä tilassa.
 //
-// Region-taso (depth 1) näyttää ison kansikuvan (RegionPhotoBanner), jonka
-// PÄÄLLÄ nimi + pullomäärä nyt ovat — ei enää erillistä otsikkoriviä alla.
-// Syvemmät tasot (depth >= 2, esim. appellaatio/tuottaja-nimi) käyttävät
-// entistä pienempää otsikko + alaviiva-erotin -tyyliä.
+// Region-taso (depth 1) on yksi pyöristetty kortti: RegionPhotoBanner
+// (nimi + pullomäärä kuvan päällä) ja sen alla samassa kortissa jatkuva
+// viinilista, ilman rajaa niiden välissä — kortin oma ohut reunus + gap
+// seuraavaan korttiin hoitaa erottelun regionien välillä. Syvemmät tasot
+// (depth >= 2, esim. appellaatio/tuottaja-nimi) käyttävät entistä pienempää
+// otsikko + alaviiva-erotin -tyyliä, kortin sisällä.
 //
 // ProducerRatingBadge kuuluu tuottaja-tason riville — se on aina se
 // GroupNode, jolla on nameGroups (lehtitaso), joten se ei koskaan osu
@@ -399,12 +420,25 @@ function GroupBranch(props: GroupBranchProps) {
   }
 
   if (depth === 1) {
+    // Alue-kohtainen sävy on tarkempi osuma kuin maakohtainen, joten sitä
+    // kokeillaan ensin; COUNTRY_FLAG_COLORS toimii varana tuntemattomille
+    // alueille, ja COLORS.bg on viimeinen, aina toimiva varaväri. Tämä on
+    // koko kortin tausta — ei vain kuva-alueen — joten sama väri näkyy
+    // myös kuvan puuttuessa ja viinilistan takana.
+    const cardBackground = country
+      ? (getRegionFallbackColor(node.key) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg)
+      : COLORS.bg
+
     return (
       <div
         style={{
-          marginBottom: '28px',
-          paddingBottom: '19px',
-          borderBottom: `1.5px solid ${COLORS.line}`,
+          marginLeft: '8px',
+          marginRight: '8px',
+          marginBottom: '24px',
+          border: `1px solid ${COLORS.line}`,
+          borderRadius: '20px',
+          overflow: 'hidden',
+          background: cardBackground,
         }}
       >
         {country && (
@@ -416,7 +450,7 @@ function GroupBranch(props: GroupBranchProps) {
             totalBottles={node.totalBottles}
           />
         )}
-        <div style={{ paddingTop: '18px' }}>
+        <div style={{ padding: '18px' }}>
           <GroupBranchBody {...props} />
         </div>
       </div>

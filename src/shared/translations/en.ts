@@ -81,6 +81,13 @@ export const en = {
   vintage_add_link: 'Add vintage',
   vintage_modal_edit_title: 'Edit vintage',
   vintage_modal_create_title: 'Add vintage',
+  vintage_bottles_section: 'Bottles',
+  vintage_tastings_section: 'Tastings',
+
+  wine_edit_menu_identity: 'Edit wine details',
+  wine_edit_menu_vintage: 'Edit vintage',
+  wine_detail_rating_label: 'Rating',
+  wine_detail_price_label: 'Avg. price',
 
   bottle_add_link: 'Add bottle',
   bottle_status_cellar: 'In cellar',

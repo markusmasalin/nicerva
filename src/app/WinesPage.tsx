@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { Euro, Heart, Wine as WineIcon, ShoppingBag, ListFilter, Search, type LucideIcon } from 'lucide-react'
 import {
   useCreateWine,
   useUpdateWine,
@@ -9,13 +10,12 @@ import {
   WineFilters,
 } from '../features/wines'
 import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo, WineType } from '../features/wines'
-import { useCreateBottle, useBottleCounts } from '../features/inventory'
+import { useCreateBottle } from '../features/inventory'
 import { ensureProducer } from '../features/producers'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
 import { similarity } from '../shared/textSimilarity'
 import { GROUP_LEVELS, type GroupingMode } from '../shared/groupingModes'
-import { CollectionOverview } from './CollectionOverview'
 import { CollectionView } from './CollectionView'
 import { WineDetailModal } from './WineDetailModal'
 import { DuplicateBottleModal } from './DuplicateBottleModal'
@@ -66,13 +66,26 @@ function StatCard({ icon, value, label, active, onClick }: StatCardProps) {
         textAlign: 'center',
         cursor: 'pointer',
         padding: '8px 4px 10px',
-        borderBottom: active ? `2px solid ${COLORS.text}` : '2px solid transparent',
       }}
     >
       <div style={{ height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
         {icon}
       </div>
-      <div style={{ fontSize: '20px', color: COLORS.text, marginTop: '4px' }}>{value}</div>
+      {/* display: inline-block + textAlign: center yllä keskittää tämän
+          sisällön levyisenä laatikkona, jotta alaviiva-korostus (borderBottom)
+          hugii vain numeroa (+ pieni sivupadding) eikä koko sarakkeen leveyttä. */}
+      <div
+        style={{
+          display: 'inline-block',
+          fontSize: '34px',
+          color: COLORS.text,
+          marginTop: '4px',
+          padding: '0 4px',
+          borderBottom: active ? `2px solid ${COLORS.text}` : '2px solid transparent',
+        }}
+      >
+        {value}
+      </div>
       <div
         style={{
           fontSize: '10px',
@@ -89,16 +102,19 @@ function StatCard({ icon, value, label, active, onClick }: StatCardProps) {
 }
 
 type IconActionProps = {
-  icon: string
+  icon: LucideIcon
   title: string
   active?: boolean
+  // Oletuksena COLORS.text (perii ympäröivän tekstin värin) — Sydän
+  // saa oman COLORS.wineRed-sävynsä tästä, muut jättävät sen asettamatta.
+  color?: string
   onClick: () => void
 }
 
 // Neljän ikonin rivi kahden luvun alla: €/♥ vaihtavat viewMode:a, 🍷/🛍
 // eivät tee vielä mitään paitsi näyttävät "Tulossa pian" -ilmoituksen
 // (title-attribuutti hoitaa työpöytä-hoverin, klikkaus mobiilissa).
-function IconAction({ icon, title, active, onClick }: IconActionProps) {
+function IconAction({ icon: Icon, title, active, color, onClick }: IconActionProps) {
   return (
     <button
       type="button"
@@ -109,13 +125,14 @@ function IconAction({ icon, title, active, onClick }: IconActionProps) {
         border: 'none',
         background: 'transparent',
         cursor: 'pointer',
-        fontSize: '20px',
+        display: 'flex',
         padding: '8px 4px',
         lineHeight: 1,
+        color: color ?? COLORS.text,
         borderBottom: active ? `2px solid ${COLORS.text}` : '2px solid transparent',
       }}
     >
-      {icon}
+      <Icon size={20} color="currentColor" />
     </button>
   )
 }
@@ -195,7 +212,6 @@ export function WinesPage() {
   // Erillinen, suodattamaton kysely — päättää ison NICERVA-otsikon
   // näkyvyyden koko kokoelman koon perusteella, ei nykyisen hakutuloksen.
   const { data: allWines = [], isLoading: allWinesLoading } = useWines()
-  const { data: bottleCounts = {} } = useBottleCounts()
   const createWine = useCreateWine()
   const updateWine = useUpdateWine()
   const createBottle = useCreateBottle()
@@ -314,10 +330,6 @@ export function WinesPage() {
     resetFormState()
   }
 
-  const countriesWithBottles = new Set(
-    wines.filter((wine) => (bottleCounts[wine.id] ?? 0) > 0).map((wine) => wine.country),
-  )
-
   const producerCount = new Set(wines.map((wine) => wine.producer)).size
 
   return (
@@ -331,21 +343,29 @@ export function WinesPage() {
         )}
 
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
-          <input
-            placeholder={t('filters_search_placeholder')}
-            value={filters.search ?? ''}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value || undefined })}
-            style={{
-              flex: 1,
-              border: 'none',
-              borderBottom: `0.5px solid ${COLORS.line}`,
-              background: 'transparent',
-              color: COLORS.text,
-              colorScheme: 'light',
-              fontSize: '14px',
-              padding: '6px 2px',
-            }}
-          />
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search
+              size={16}
+              color={COLORS.textMuted}
+              style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+            />
+            <input
+              placeholder={t('filters_search_placeholder')}
+              value={filters.search ?? ''}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value || undefined })}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                border: `0.5px solid ${COLORS.line}`,
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                color: COLORS.text,
+                colorScheme: 'light',
+                fontSize: '14px',
+                padding: '9px 10px 9px 34px',
+              }}
+            />
+          </div>
           <button
             type="button"
             onClick={() => setShowFilters((current) => !current)}
@@ -355,13 +375,14 @@ export function WinesPage() {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              fontSize: '16px',
+              display: 'flex',
               padding: '4px',
               lineHeight: 1,
+              color: COLORS.text,
               opacity: showFilters ? 1 : 0.7,
             }}
           >
-            ⚙️
+            <ListFilter size={18} color="currentColor" />
           </button>
           <input
             ref={frontScanInputRef}
@@ -403,11 +424,17 @@ export function WinesPage() {
               onClick={() => setViewMode('producer')}
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '28px', marginTop: '4px' }}>
-            <IconAction icon="€" title={t('view_price')} active={viewMode === 'price'} onClick={() => setViewMode('price')} />
-            <IconAction icon="♥" title={t('view_liked')} active={viewMode === 'liked'} onClick={() => setViewMode('liked')} />
-            <IconAction icon="🍷" title={t('coming_soon_label')} onClick={showComingSoon} />
-            <IconAction icon="🛍" title={t('coming_soon_label')} onClick={showComingSoon} />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(16px, 8vw, 64px)', marginTop: '4px' }}>
+            <IconAction icon={Euro} title={t('view_price')} active={viewMode === 'price'} onClick={() => setViewMode('price')} />
+            <IconAction
+              icon={Heart}
+              title={t('view_liked')}
+              active={viewMode === 'liked'}
+              color={COLORS.wineRed}
+              onClick={() => setViewMode('liked')}
+            />
+            <IconAction icon={WineIcon} title={t('coming_soon_label')} onClick={showComingSoon} />
+            <IconAction icon={ShoppingBag} title={t('coming_soon_label')} onClick={showComingSoon} />
           </div>
           {comingSoonVisible && (
             <div style={{ textAlign: 'center', fontSize: '12px', color: COLORS.textMuted, marginTop: '6px' }}>
@@ -474,8 +501,6 @@ export function WinesPage() {
             />
           </Modal>
         )}
-
-        {countriesWithBottles.size >= 2 && <CollectionOverview wines={wines} bottleCounts={bottleCounts} />}
 
         <CollectionView
           filters={filters}

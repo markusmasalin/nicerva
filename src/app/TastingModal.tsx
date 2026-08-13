@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from 'react'
+import { Plus } from 'lucide-react'
 import { useWine } from '../features/wines'
 import { useUpdateBottle } from '../features/inventory'
 import type { Bottle, NewBottle } from '../features/inventory'
@@ -385,9 +386,10 @@ export function TastingModal({ bottle, onClose }: Props) {
             <button
               type="button"
               onClick={() => setShowFoodInput(true)}
-              style={foodPillStyle(isCustomFoodSelected)}
+              style={{ ...foodPillStyle(isCustomFoodSelected), display: 'inline-flex', alignItems: 'center', gap: '4px' }}
             >
-              ➕{isCustomFoodSelected ? ` ${foodPairing}` : ''}
+              <Plus size={14} color="currentColor" />
+              {isCustomFoodSelected ? foodPairing : ''}
             </button>
           </div>
           {showFoodInput && (

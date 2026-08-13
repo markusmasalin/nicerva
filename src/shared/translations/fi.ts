@@ -81,6 +81,13 @@ export const fi = {
   vintage_add_link: 'Lisää vuosikerta',
   vintage_modal_edit_title: 'Muokkaa vuosikertaa',
   vintage_modal_create_title: 'Lisää vuosikerta',
+  vintage_bottles_section: 'Pullot',
+  vintage_tastings_section: 'Arviot',
+
+  wine_edit_menu_identity: 'Muokkaa viinin tietoja',
+  wine_edit_menu_vintage: 'Muokkaa vuosikertaa',
+  wine_detail_rating_label: 'Arvio',
+  wine_detail_price_label: 'Keskihinta',
 
   bottle_add_link: 'Lisää pullo',
   bottle_status_cellar: 'Kellarissa',

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { BottleWine } from 'lucide-react'
 import type { Bottle, BottleStatus } from '../types'
 import { COLORS } from '../../../shared/colors'
 import { useTranslation } from '../../../app/LanguageContext'
@@ -47,8 +48,12 @@ export function BottleList({ bottles, editMode, onEdit, onOpenBottle }: Props) {
           <span style={{ width: '90px' }}>{statusLabels[bottle.status]}</span>
           <span style={{ flex: 1 }}>{bottle.note ?? ''}</span>
           {bottle.status === 'cellar' && (
-            <span onClick={() => onOpenBottle(bottle)} style={linkStyle}>
-              🍾 {t('bottle_open_link')}
+            <span
+              onClick={() => onOpenBottle(bottle)}
+              style={{ ...linkStyle, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+            >
+              <BottleWine size={14} color="currentColor" />
+              {t('bottle_open_link')}
             </span>
           )}
           {editMode && (

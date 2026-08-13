@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Menu } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { QueryProvider } from './app/QueryProvider'
 import { WinesPage } from './app/WinesPage'
@@ -51,13 +52,13 @@ function AppContent({ session, loading }: AppContentProps) {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              fontSize: '20px',
+              display: 'flex',
               lineHeight: 1,
               padding: '4px',
               color: COLORS.text,
             }}
           >
-            ☰
+            <Menu size={20} color="currentColor" />
           </button>
 
           {showAccountMenu && (
@@ -109,7 +110,7 @@ function AppContent({ session, loading }: AppContentProps) {
           )}
         </div>
 
-        <span style={{ color: COLORS.text, letterSpacing: '0.05em', fontSize: '13px', fontWeight: 600 }}>
+        <span style={{ color: COLORS.text, letterSpacing: '0.05em', fontSize: '23px', fontWeight: 600 }}>
           NICERVA
         </span>
 

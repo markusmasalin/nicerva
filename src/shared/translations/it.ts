@@ -81,6 +81,13 @@ export const it = {
   vintage_add_link: 'Aggiungi annata',
   vintage_modal_edit_title: 'Modifica annata',
   vintage_modal_create_title: 'Aggiungi annata',
+  vintage_bottles_section: 'Bottiglie',
+  vintage_tastings_section: 'Degustazioni',
+
+  wine_edit_menu_identity: 'Modifica i dettagli del vino',
+  wine_edit_menu_vintage: 'Modifica annata',
+  wine_detail_rating_label: 'Voto',
+  wine_detail_price_label: 'Prezzo medio',
 
   bottle_add_link: 'Aggiungi bottiglia',
   bottle_status_cellar: 'In cantina',
