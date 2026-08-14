@@ -1,4 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { COLORS } from './colors'
 import { useTranslation } from '../app/LanguageContext'
 
@@ -28,6 +29,7 @@ const cardStyle: CSSProperties = {
   maxWidth: '420px',
   maxHeight: '85vh',
   overflowY: 'auto',
+  overscrollBehavior: 'contain',
   boxSizing: 'border-box',
 }
 
@@ -35,7 +37,24 @@ const cardStyle: CSSProperties = {
 // sovelluksessa — kohdennetut muokkausmodaalit rakentuvat tämän päälle.
 export function Modal({ title, onClose, children }: Props) {
   const t = useTranslation()
-  return (
+
+  useEffect(() => {
+    const scrollY = window.scrollY
+    const body = document.body
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    return () => {
+      body.style.position = ''
+      body.style.top = ''
+      body.style.left = ''
+      body.style.right = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
+
+  return createPortal(
     <div onClick={onClose} style={overlayStyle}>
       <div onClick={(e) => e.stopPropagation()} style={cardStyle}>
         <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
@@ -44,6 +63,7 @@ export function Modal({ title, onClose, children }: Props) {
         <h2 style={{ margin: '12px 0 20px', fontSize: '1.2rem', fontWeight: 400, color: COLORS.text }}>{title}</h2>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

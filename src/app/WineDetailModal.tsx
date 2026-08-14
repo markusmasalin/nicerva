@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Plus, Pencil } from 'lucide-react'
 import { useWines, useDeleteWine } from '../features/wines'
 import type { Wine } from '../features/wines'
@@ -275,6 +275,22 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const deleteWine = useDeleteWine()
   const { data: bottleCounts = {} } = useBottleCounts()
   const { data: averagePrices = {} } = useAveragePrices()
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const preventScroll = (e: Event) => {
+      if (contentRef.current?.contains(e.target as Node)) {
+        return // sallitaan vieritys kortin oman sisällön sisällä
+      }
+      e.preventDefault()
+    }
+    window.addEventListener('wheel', preventScroll, { passive: false })
+    window.addEventListener('touchmove', preventScroll, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', preventScroll)
+      window.removeEventListener('touchmove', preventScroll)
+    }
+  }, [])
 
   const name = identity.name.trim().toLowerCase()
   const producer = identity.producer.trim().toLowerCase()
@@ -351,10 +367,11 @@ export function WineDetailModal({ identity, onClose }: Props) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 100,
+          zIndex: 200,
         }}
       >
         <div
+          ref={contentRef}
           onClick={(e) => e.stopPropagation()}
           className="modal-panel"
           style={{
@@ -362,6 +379,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
             color: COLORS.text,
             maxHeight: '85vh',
             overflowY: 'auto',
+            overscrollBehavior: 'contain',
             borderRadius: '12px',
           }}
         >
