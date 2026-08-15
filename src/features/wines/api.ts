@@ -22,6 +22,8 @@ function toWine(row: Record<string, unknown>): Wine {
     notes: row.notes as string | null,
     labelImageUrl: row.label_image_url as string | null,
     createdAt: row.created_at as string,
+    favoriteTier: (row.favorite_tier as string | null) ?? null,
+    wishlistTier: (row.wishlist_tier as string | null) ?? null,
   }
 }
 
@@ -135,6 +137,46 @@ export async function updateWineIdentity(
     })
     .ilike('name', trimmedName)
     .ilike('producer', trimmedProducer)
+  if (error) throw error
+}
+
+// Bulk-päivitykset koko name+producer-ryhmälle — sama periaate kuin
+// updateWineIdentity, mutta koskee vain yhtä taso-kenttää kerrallaan.
+export async function updateWineGroupFavoriteTier(
+  name: string,
+  producer: string,
+  tier: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from('wines')
+    .update({ favorite_tier: tier })
+    .ilike('name', name.trim())
+    .ilike('producer', producer.trim())
+  if (error) throw error
+}
+
+export async function updateWineGroupWishlistTier(
+  name: string,
+  producer: string,
+  tier: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from('wines')
+    .update({ wishlist_tier: tier })
+    .ilike('name', name.trim())
+    .ilike('producer', producer.trim())
+  if (error) throw error
+}
+
+// Yksittäisen vuosikertarivin oma taso — koskee vain sitä yhtä riviä (id),
+// ei koko name+producer-ryhmää.
+export async function updateWineFavoriteTier(id: string, tier: string | null): Promise<void> {
+  const { error } = await supabase.from('wines').update({ favorite_tier: tier }).eq('id', id)
+  if (error) throw error
+}
+
+export async function updateWineWishlistTier(id: string, tier: string | null): Promise<void> {
+  const { error } = await supabase.from('wines').update({ wishlist_tier: tier }).eq('id', id)
   if (error) throw error
 }
 

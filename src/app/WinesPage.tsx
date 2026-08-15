@@ -10,7 +10,7 @@ import {
   WineFilters,
 } from '../features/wines'
 import type { Wine, NewWine, WineFilterParams, IdentifiedWine, PurchaseInfo, WineType } from '../features/wines'
-import { useCreateBottle } from '../features/inventory'
+import { useCreateBottle, useBottleCounts } from '../features/inventory'
 import { ensureProducer } from '../features/producers'
 import { COLORS } from '../shared/colors'
 import { Modal } from '../shared/Modal'
@@ -215,6 +215,7 @@ export function WinesPage() {
   const createWine = useCreateWine()
   const updateWine = useUpdateWine()
   const createBottle = useCreateBottle()
+  const { data: bottleCounts = {} } = useBottleCounts()
 
   const frontPreviewUrl = useMemo(
     () => (scannedFrontImage ? URL.createObjectURL(scannedFrontImage) : null),
@@ -232,6 +233,22 @@ export function WinesPage() {
   function showComingSoon() {
     setComingSoonVisible(true)
     setTimeout(() => setComingSoonVisible(false), 2000)
+  }
+
+  // Tasapuolinen arvonta name+producer-ryhmien KESKEN, ei painotettu
+  // pullomäärän mukaan — jokainen ryhmä lasketaan mukaan kertaalleen
+  // riippumatta siitä montako pulloa tai vuosikertaa sillä on.
+  function handleSurpriseMe() {
+    const identities = new Map<string, { name: string; producer: string }>()
+    for (const wine of allWines) {
+      if ((bottleCounts[wine.id] ?? 0) <= 0) continue
+      const key = `${wine.name.trim().toLowerCase()}|${wine.producer.trim().toLowerCase()}`
+      if (!identities.has(key)) identities.set(key, { name: wine.name, producer: wine.producer })
+    }
+    const candidates = Array.from(identities.values())
+    if (candidates.length === 0) return
+    const pick = candidates[Math.floor(Math.random() * candidates.length)]
+    setDetailIdentity(pick)
   }
 
   function handleFrontImageSelected(e: ChangeEvent<HTMLInputElement>) {
@@ -433,7 +450,7 @@ export function WinesPage() {
               color={COLORS.wineRed}
               onClick={() => setViewMode('liked')}
             />
-            <IconAction icon={WineIcon} title={t('coming_soon_label')} onClick={showComingSoon} />
+            <IconAction icon={WineIcon} title={t('collection_surprise_me_link')} onClick={handleSurpriseMe} />
             <IconAction icon={ShoppingBag} title={t('coming_soon_label')} onClick={showComingSoon} />
           </div>
           {comingSoonVisible && (

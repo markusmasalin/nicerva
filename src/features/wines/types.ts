@@ -16,12 +16,16 @@ export const wineSchema = z.object({
   notes: z.string().nullable(),
   labelImageUrl: z.string().nullable(),
   createdAt: z.string(),
+  favoriteTier: z.string().nullable(),
+  wishlistTier: z.string().nullable(),
 })
 export type Wine = z.infer<typeof wineSchema>
 
-// Lomakedata ennen tallennusta: ei vielä id:tä eikä createdAt:ia,
-// ne generoi tietokanta.
-export const newWineSchema = wineSchema.omit({ id: true, createdAt: true })
+// Lomakedata ennen tallennusta: ei vielä id:tä eikä createdAt:ia, ne generoi
+// tietokanta. favoriteTier/wishlistTier jätetään myös pois — niitä ei aseteta
+// luonti-/muokkauslomakkeen kautta, vaan omilla kohdennetuilla päivityksillä
+// (ks. features/wines/api.ts).
+export const newWineSchema = wineSchema.omit({ id: true, createdAt: true, favoriteTier: true, wishlistTier: true })
 export type NewWine = z.infer<typeof newWineSchema>
 
 export type WineFilterParams = {

@@ -89,6 +89,24 @@ export const it = {
   wine_detail_rating_label: 'Voto',
   wine_detail_price_label: 'Prezzo medio',
 
+  favorite_tier_aarre: 'Tesoro',
+  favorite_tier_timantti: 'Diamante',
+  favorite_tier_legenda: 'Leggenda',
+  favorite_menu_title: 'Contrassegna come preferito',
+  favorite_remove: 'Rimuovi dai preferiti',
+
+  wishlist_tier_1: 'Nella lista dei desideri',
+  wishlist_tier_2: 'Prioritario',
+  wishlist_tier_3: 'Caccia aperta',
+  wishlist_menu_title: 'Aggiungi alla lista dei desideri',
+  wishlist_remove: 'Rimuovi dalla lista dei desideri',
+  wishlist_hint: 'Vuoi aggiungerlo alla lista dei desideri?',
+
+  liked_ghost_label: 'Non più in cantina',
+  liked_section_other: 'Altri vini',
+
+  collection_surprise_me_link: 'Sorprendimi',
+
   bottle_add_link: 'Aggiungi bottiglia',
   bottle_status_cellar: 'In cantina',
   bottle_status_consumed: 'Consumata',

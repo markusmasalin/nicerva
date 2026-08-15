@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Plus, Pencil } from 'lucide-react'
-import { useWines, useDeleteWine } from '../features/wines'
+import { useQueryClient } from '@tanstack/react-query'
+import { Plus, Pencil, Award, Bookmark } from 'lucide-react'
+import {
+  useWines,
+  useDeleteWine,
+  updateWineGroupFavoriteTier,
+  updateWineGroupWishlistTier,
+  updateWineFavoriteTier,
+  updateWineWishlistTier,
+} from '../features/wines'
 import type { Wine } from '../features/wines'
 import { BottleManager, useBottleCounts, useAveragePrices } from '../features/inventory'
 import {
@@ -16,7 +24,9 @@ import { getBottleShape } from '../shared/bottleShapes'
 import { WineIdentityModal } from './WineIdentityModal'
 import { VintageModal } from './VintageModal'
 import { BottleEditModal } from './BottleEditModal'
+import { TierMenu, type TierOption } from './TierMenu'
 import { useTranslation } from './LanguageContext'
+import type { TranslationKey } from '../shared/translations'
 
 type Identity = {
   name: string
@@ -79,17 +89,47 @@ const chipLabelStyle: CSSProperties = {
   marginTop: '2px',
 }
 
-const floatingBarButtonStyle: CSSProperties = {
+const actionBarButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
+  gap: '8px',
   border: 'none',
   background: 'transparent',
-  color: COLORS.bg,
+  color: COLORS.text,
   fontSize: '13px',
-  padding: '10px 16px',
-  borderRadius: '999px',
+  padding: '4px 8px',
   cursor: 'pointer',
+}
+
+const actionBarIconCircleStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  flexShrink: 0,
+  color: COLORS.bg,
+}
+
+type Translate = (key: TranslationKey) => string
+
+// Ylimmästä alimpaan taso — sama järjestys näkyy TierMenu-valikossa.
+// Molemmat identiteetti- ja vuosikertatason käyttökohteet jakavat nämä.
+function favoriteTierOptions(t: Translate): TierOption[] {
+  return [
+    { value: 'legenda', label: t('favorite_tier_legenda') },
+    { value: 'timantti', label: t('favorite_tier_timantti') },
+    { value: 'aarre', label: t('favorite_tier_aarre') },
+  ]
+}
+
+function wishlistTierOptions(t: Translate): TierOption[] {
+  return [
+    { value: 'tier3', label: t('wishlist_tier_3') },
+    { value: 'tier2', label: t('wishlist_tier_2') },
+    { value: 'tier1', label: t('wishlist_tier_1') },
+  ]
 }
 
 type VintageModalState = { mode: 'edit'; wine: Wine } | { mode: 'create' } | null
@@ -124,6 +164,8 @@ type VintageBlockProps = {
   onToggleTastings: () => void
   onEditVintage: () => void
   onDeleteVintage: () => void
+  onSelectFavoriteTier: (tier: string | null) => void
+  onSelectWishlistTier: (tier: string | null) => void
 }
 
 function VintageBlock({
@@ -140,6 +182,8 @@ function VintageBlock({
   onToggleTastings,
   onEditVintage,
   onDeleteVintage,
+  onSelectFavoriteTier,
+  onSelectWishlistTier,
 }: VintageBlockProps) {
   const t = useTranslation()
   const { data: tastings = [] } = useTastingsForWine(wine.id)
@@ -203,6 +247,27 @@ function VintageBlock({
 
       {expanded && (
         <div style={{ marginTop: '16px', paddingLeft: '26px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div title={t('favorite_menu_title')}>
+              <TierMenu
+                icon={<Award size={18} color="currentColor" />}
+                currentTier={wine.favoriteTier}
+                options={favoriteTierOptions(t)}
+                removeLabel={t('favorite_remove')}
+                onSelect={onSelectFavoriteTier}
+              />
+            </div>
+            <div title={t('wishlist_menu_title')}>
+              <TierMenu
+                icon={<Bookmark size={18} color="currentColor" />}
+                currentTier={wine.wishlistTier}
+                options={wishlistTierOptions(t)}
+                removeLabel={t('wishlist_remove')}
+                onSelect={onSelectWishlistTier}
+              />
+            </div>
+          </div>
+
           <div>
             <div onClick={onToggleBottles} style={sectionHeaderStyle}>
               {bottlesOpen ? '▾' : '▸'} {t('vintage_bottles_section')}
@@ -276,6 +341,29 @@ export function WineDetailModal({ identity, onClose }: Props) {
   const { data: bottleCounts = {} } = useBottleCounts()
   const { data: averagePrices = {} } = useAveragePrices()
   const contentRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
+
+  // Sama kevyt malli kuin WineIdentityModal.tsx:ssä updateWineIdentity:lle —
+  // ei erillistä React Query -mutaatiohookia, vain suora kutsu + invalidointi.
+  async function handleGroupFavoriteTier(tier: string | null) {
+    await updateWineGroupFavoriteTier(identity.name, identity.producer, tier)
+    queryClient.invalidateQueries({ queryKey: ['wines'] })
+  }
+
+  async function handleGroupWishlistTier(tier: string | null) {
+    await updateWineGroupWishlistTier(identity.name, identity.producer, tier)
+    queryClient.invalidateQueries({ queryKey: ['wines'] })
+  }
+
+  async function handleVintageFavoriteTier(wineId: string, tier: string | null) {
+    await updateWineFavoriteTier(wineId, tier)
+    queryClient.invalidateQueries({ queryKey: ['wines'] })
+  }
+
+  async function handleVintageWishlistTier(wineId: string, tier: string | null) {
+    await updateWineWishlistTier(wineId, tier)
+    queryClient.invalidateQueries({ queryKey: ['wines'] })
+  }
 
   useEffect(() => {
     const preventScroll = (e: Event) => {
@@ -426,15 +514,20 @@ export function WineDetailModal({ identity, onClose }: Props) {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '40px',
-                  fontWeight: 400,
+                  fontSize: 'clamp(32px, 7vw, 38px)',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
                   lineHeight: 1.15,
                   color: COLORS.text,
+                  whiteSpace: 'normal',
+                  overflowWrap: 'break-word',
                 }}
               >
                 {first.name}
               </h2>
-              <div style={{ color: COLORS.textMuted, fontSize: '0.9rem', marginTop: '6px' }}>{first.producer}</div>
+              <div style={{ color: WINE_TYPE_COLORS[first.type] ?? COLORS.textMuted, fontSize: '0.9rem', marginTop: '6px' }}>
+                {first.producer}
+              </div>
               {subtitle && (
                 <div style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginTop: '4px' }}>{subtitle}</div>
               )}
@@ -443,12 +536,37 @@ export function WineDetailModal({ identity, onClose }: Props) {
                   {t('wine_grapes_prefix')}: {first.grapes.join(', ')}
                 </div>
               )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                <div title={t('favorite_menu_title')}>
+                  <TierMenu
+                    icon={<Award size={18} color="currentColor" />}
+                    currentTier={first.favoriteTier}
+                    options={favoriteTierOptions(t)}
+                    removeLabel={t('favorite_remove')}
+                    onSelect={handleGroupFavoriteTier}
+                  />
+                </div>
+                <div title={t('wishlist_menu_title')}>
+                  <TierMenu
+                    icon={<Bookmark size={18} color="currentColor" />}
+                    currentTier={first.wishlistTier}
+                    options={wishlistTierOptions(t)}
+                    removeLabel={t('wishlist_remove')}
+                    onSelect={handleGroupWishlistTier}
+                  />
+                </div>
+                {totalBottleCount === 0 && (
+                  <span style={{ color: COLORS.textMuted, fontSize: '12px' }}>{t('wishlist_hint')}</span>
+                )}
+              </div>
             </div>
 
             {vintagesWithBottles.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '20px' }}>
                 {vintagesWithBottles.map((wine) => {
                   const selected = selectedVintageId === wine.id
+                  const typeColor = WINE_TYPE_COLORS[wine.type] ?? COLORS.wineRed
                   return (
                     <button
                       key={wine.id}
@@ -460,7 +578,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
                         padding: '6px 14px',
                         fontSize: '13px',
                         cursor: 'pointer',
-                        background: selected ? COLORS.wineRed : 'transparent',
+                        background: selected ? typeColor : 'transparent',
                         color: selected ? COLORS.bg : COLORS.text,
                       }}
                     >
@@ -472,103 +590,106 @@ export function WineDetailModal({ identity, onClose }: Props) {
             )}
           </div>
 
-          {wineGroup.map((wine) => (
-            <VintageBlock
-              key={wine.id}
-              wine={wine}
-              vintageEditMode={vintageEditMode}
-              averageRating={averageRatings[wine.id]}
-              bottleCount={bottleCounts[wine.id] ?? 0}
-              averagePrice={averagePrices[wine.id]}
-              expanded={expandedVintages.has(wine.id)}
-              bottlesOpen={openBottleSections.has(wine.id)}
-              tastingsOpen={openTastingSections.has(wine.id)}
-              onToggleExpanded={() => setExpandedVintages((current) => toggleInSet(current, wine.id))}
-              onToggleBottles={() => setOpenBottleSections((current) => toggleInSet(current, wine.id))}
-              onToggleTastings={() => setOpenTastingSections((current) => toggleInSet(current, wine.id))}
-              onEditVintage={() => setVintageModal({ mode: 'edit', wine })}
-              onDeleteVintage={() => deleteWine.mutate(wine.id)}
-            />
-          ))}
+          <div style={{ paddingBottom: '16px' }}>
+            {wineGroup.map((wine) => (
+              <VintageBlock
+                key={wine.id}
+                wine={wine}
+                vintageEditMode={vintageEditMode}
+                averageRating={averageRatings[wine.id]}
+                bottleCount={bottleCounts[wine.id] ?? 0}
+                averagePrice={averagePrices[wine.id]}
+                expanded={expandedVintages.has(wine.id)}
+                bottlesOpen={openBottleSections.has(wine.id)}
+                tastingsOpen={openTastingSections.has(wine.id)}
+                onToggleExpanded={() => setExpandedVintages((current) => toggleInSet(current, wine.id))}
+                onToggleBottles={() => setOpenBottleSections((current) => toggleInSet(current, wine.id))}
+                onToggleTastings={() => setOpenTastingSections((current) => toggleInSet(current, wine.id))}
+                onEditVintage={() => setVintageModal({ mode: 'edit', wine })}
+                onDeleteVintage={() => deleteWine.mutate(wine.id)}
+                onSelectFavoriteTier={(tier) => handleVintageFavoriteTier(wine.id, tier)}
+                onSelectWishlistTier={(tier) => handleVintageWishlistTier(wine.id, tier)}
+              />
+            ))}
 
-          {vintageEditMode && (
-            <span onClick={() => setVintageModal({ mode: 'create' })} style={linkStyle}>
-              + {t('vintage_add_link')}
-            </span>
-          )}
+            {vintageEditMode && (
+              <span onClick={() => setVintageModal({ mode: 'create' })} style={linkStyle}>
+                + {t('vintage_add_link')}
+              </span>
+            )}
+          </div>
 
-          {/* Kelluva toimintopalkki — position: sticky suhteessa .modal-panel:iin
+          {/* Kiinteä alapalkki — position: sticky suhteessa .modal-panel:iin
               (tämä on modaalin OMA vierityskontti, ks. overflowY: 'auto' yllä),
               ei koko sivuun; siksi se pysyy näkyvissä vain modaalin sisäisen
-              vierityksen aikana eikä koskaan karkaa modaalin rajojen yli. */}
+              vierityksen aikana eikä koskaan karkaa modaalin rajojen yli.
+              .modal-action-bar (index.css) kumoaa .modal-panel:n sivupaddingin
+              negatiivisella marginaalilla ja lisää sen takaisin omana
+              paddinginaan, jotta palkki ulottuu reunasta reunaan. */}
           <div
+            className="modal-action-bar"
             style={{
               position: 'sticky',
-              bottom: '16px',
-              marginTop: '24px',
+              bottom: 0,
               display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
+              gap: '24px',
+              background: COLORS.bg,
+              borderTop: `1px solid ${COLORS.line}`,
               zIndex: 50,
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: COLORS.text,
-                borderRadius: '999px',
-                padding: '6px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-              }}
+            <button
+              type="button"
+              onClick={() => setShowCreateBottle(true)}
+              aria-label={t('bottle_add_link')}
+              style={actionBarButtonStyle}
             >
+              <span style={{ ...actionBarIconCircleStyle, background: WINE_TYPE_COLORS[first.type] ?? COLORS.wineRed }}>
+                <Plus size={16} color="currentColor" />
+              </span>
+              {t('bottle_add_link')}
+            </button>
+
+            <div style={{ position: 'relative' }}>
               <button
                 type="button"
-                onClick={() => setShowCreateBottle(true)}
-                aria-label={t('bottle_add_link')}
-                style={floatingBarButtonStyle}
+                onClick={handleEditIconClick}
+                aria-label={vintageEditMode ? t('common_done') : t('common_edit')}
+                style={actionBarButtonStyle}
               >
-                <Plus size={16} color="currentColor" />
-                {t('bottle_add_link')}
+                <span style={{ ...actionBarIconCircleStyle, background: COLORS.textMuted }}>
+                  <Pencil size={16} color="currentColor" />
+                </span>
+                {vintageEditMode ? t('common_done') : t('common_edit')}
               </button>
 
-              <div style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  onClick={handleEditIconClick}
-                  aria-label={vintageEditMode ? t('common_done') : t('common_edit')}
-                  style={floatingBarButtonStyle}
-                >
-                  <Pencil size={16} color="currentColor" />
-                  {vintageEditMode ? t('common_done') : t('common_edit')}
-                </button>
-
-                {showEditMenu && (
-                  <>
-                    <div onClick={() => setShowEditMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 110 }} />
-                    <div onClick={(e) => e.stopPropagation()} style={menuCardStyle}>
-                      <span
-                        onClick={() => {
-                          setShowEditMenu(false)
-                          setShowIdentityModal(true)
-                        }}
-                        style={menuItemStyle}
-                      >
-                        {t('wine_edit_menu_identity')}
-                      </span>
-                      <span
-                        onClick={() => {
-                          setShowEditMenu(false)
-                          setVintageEditMode(true)
-                        }}
-                        style={menuItemStyle}
-                      >
-                        {t('wine_edit_menu_vintage')}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
+              {showEditMenu && (
+                <>
+                  <div onClick={() => setShowEditMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 110 }} />
+                  <div onClick={(e) => e.stopPropagation()} style={menuCardStyle}>
+                    <span
+                      onClick={() => {
+                        setShowEditMenu(false)
+                        setShowIdentityModal(true)
+                      }}
+                      style={menuItemStyle}
+                    >
+                      {t('wine_edit_menu_identity')}
+                    </span>
+                    <span
+                      onClick={() => {
+                        setShowEditMenu(false)
+                        setVintageEditMode(true)
+                      }}
+                      style={menuItemStyle}
+                    >
+                      {t('wine_edit_menu_vintage')}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

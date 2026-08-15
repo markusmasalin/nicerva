@@ -2,7 +2,15 @@
 // saavat tuoda vain täältä — eivät suoraan esim. features/wines/api.ts:stä.
 export type { Wine, NewWine, WineType, WineFilterParams } from './types'
 export { useWines, useWine, useCreateWine, useUpdateWine, useDeleteWine } from './useWines'
-export { uploadLabelImage, identifyWine, updateWineIdentity } from './api'
+export {
+  uploadLabelImage,
+  identifyWine,
+  updateWineIdentity,
+  updateWineGroupFavoriteTier,
+  updateWineGroupWishlistTier,
+  updateWineFavoriteTier,
+  updateWineWishlistTier,
+} from './api'
 export type { IdentifiedWine, IdentifyWineResult, WineIdentityUpdate } from './api'
 export { WineList } from './components/WineList'
 export { WineForm } from './components/WineForm'

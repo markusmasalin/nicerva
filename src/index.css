@@ -25,6 +25,11 @@ body {
   padding: 40px;
 }
 
+.modal-action-bar {
+  margin: 24px -40px 0;
+  padding: 12px 40px;
+}
+
 .bottle-row {
   flex-wrap: nowrap;
 }
@@ -61,6 +66,11 @@ body {
   .modal-panel {
     width: 100%;
     padding: 24px 16px;
+  }
+
+  .modal-action-bar {
+    margin: 24px -16px 0;
+    padding: 12px 16px;
   }
 
   .bottle-row {

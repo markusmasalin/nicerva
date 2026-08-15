@@ -89,6 +89,24 @@ export const fi = {
   wine_detail_rating_label: 'Arvio',
   wine_detail_price_label: 'Keskihinta',
 
+  favorite_tier_aarre: 'Aarre',
+  favorite_tier_timantti: 'Timantti',
+  favorite_tier_legenda: 'Legenda',
+  favorite_menu_title: 'Merkitse suosikiksi',
+  favorite_remove: 'Poista suosikeista',
+
+  wishlist_tier_1: 'Toivelistalla',
+  wishlist_tier_2: 'Priorisoitu',
+  wishlist_tier_3: 'Etsintäkuulutus',
+  wishlist_menu_title: 'Lisää toivelistalle',
+  wishlist_remove: 'Poista toivelistalta',
+  wishlist_hint: 'Haluaisitko lisätä tämän toivelistalle?',
+
+  liked_ghost_label: 'Ei enää kellarissa',
+  liked_section_other: 'Muut viinit',
+
+  collection_surprise_me_link: 'Yllätä minut',
+
   bottle_add_link: 'Lisää pullo',
   bottle_status_cellar: 'Kellarissa',
   bottle_status_consumed: 'Juotu',

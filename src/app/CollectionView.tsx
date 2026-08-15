@@ -13,6 +13,7 @@ import { getBottleShape } from '../shared/bottleShapes'
 import { useTranslation, useLanguage } from './LanguageContext'
 import type { LanguageCode } from '../shared/countries'
 import type { GroupLevel, GroupingMode, GroupContext } from '../shared/groupingModes'
+import type { TranslationKey } from '../shared/translations'
 
 // Vakio tyhjä manifesti kun useRegionPhotoManifest ei ole vielä ladannut —
 // moduulitason vakio välttää turhan uuden Set-olion luonnin joka renderillä.
@@ -149,6 +150,10 @@ type NameGroupBlockProps = {
   // Vain 'liked'-näkymä välittää tämän — koko näkymän pointti on näyttää
   // arvio näkyvästi, koska lista on JÄRJESTETTY sen mukaan.
   rating?: number | null
+  // Vain 'liked'-näkymä: ryhmä jolla on 0 pulloa kellarissa mutta ≥1 arvio —
+  // muut näkymät eivät koskaan välitä tätä, koska niiden oma buildGroups-
+  // suodatin piilottaa nollapullo-ryhmät jo ennen NameGroupBlockia.
+  isGhost?: boolean
 }
 
 // Rivejä jätetään pois kun sama tieto on jo ryhmän otsikkona (GroupBranch):
@@ -163,7 +168,9 @@ function NameGroupBlock({
   truncateName,
   onOpenWine,
   rating,
+  isGhost,
 }: NameGroupBlockProps) {
+  const t = useTranslation()
   const isMultiVintage = group.wines.length > 1
 
   const truncateStyle: CSSProperties = truncateName
@@ -176,12 +183,17 @@ function NameGroupBlock({
   return (
     <div
       onClick={() => onOpenWine({ name: group.name, producer: group.producer })}
-      style={{ cursor: 'pointer', width: isMultiVintage ? '100%' : undefined, minWidth: 0 }}
+      style={{ cursor: 'pointer', width: isMultiVintage ? '100%' : undefined, minWidth: 0, opacity: isGhost ? 0.58 : 1 }}
     >
       <div style={{ marginBottom: '9px' }}>
         <div title={group.name} style={{ color: COLORS.text, fontSize: '16px', ...truncateStyle }}>
           {group.name}
         </div>
+        {isGhost && (
+          <div style={{ color: COLORS.textMuted, fontSize: '11px', fontStyle: 'italic', marginTop: '2px' }}>
+            {t('liked_ghost_label')}
+          </div>
+        )}
         {rating != null && (
           <div style={{ color: COLORS.wineRed, fontSize: '14px', fontWeight: 600, marginTop: '2px' }}>
             ⭐ {rating.toFixed(1)}
@@ -520,6 +532,16 @@ function sortByRatingDescending(
   })
 }
 
+// Liked-näkymän neljä osiota kiinteässä järjestyksessä — kukin ryhmä
+// sijoittuu osioon uusimman vuosikertansa favoriteTier-arvon mukaan,
+// null (tai tuntematon arvo) päätyy aina viimeiseen "Muut viinit" -osioon.
+const FAVORITE_TIER_SECTIONS: { tier: string | null; titleKey: TranslationKey }[] = [
+  { tier: 'legenda', titleKey: 'favorite_tier_legenda' },
+  { tier: 'timantti', titleKey: 'favorite_tier_timantti' },
+  { tier: 'aarre', titleKey: 'favorite_tier_aarre' },
+  { tier: null, titleKey: 'liked_section_other' },
+]
+
 type CollectionViewProps = {
   filters?: WineFilterParams
   groupLevels: GroupLevel[]
@@ -539,11 +561,12 @@ export function CollectionView({ filters, groupLevels, viewMode, onOpenWine }: C
   const prices = averagePrices ?? {}
 
   // 'liked' on litteä, ryhmittelemätön näkymä eikä kulje buildGroups/
-  // GroupBranch-puun kautta ollenkaan (ks. groupingModes.ts) — ryhmien
-  // arviot haetaan silti aina samalla hookilla (enabled: false kun tyhjä),
-  // jotta hookien kutsujärjestys pysyy samana joka renderillä.
-  const likedGroups =
-    viewMode === 'liked' ? buildNameGroups(wines.filter((wine) => (counts[wine.id] ?? 0) > 0)) : EMPTY_NAME_GROUPS
+  // GroupBranch-puun kautta ollenkaan (ks. groupingModes.ts). Toisin kuin
+  // muut näkymät, tämä EI suodata nollapullo-ryhmiä pois etukäteen —
+  // "haamu-viinit" (0 pulloa, ≥1 arvio) pysyvät mukana, joten kaikki ryhmät
+  // rakennetaan ja niiden arviot haetaan ensin; suodatus arvion perusteella
+  // tehdään vasta alla.
+  const likedGroups = viewMode === 'liked' ? buildNameGroups(wines) : EMPTY_NAME_GROUPS
   const { data: likedRatings } = useGroupAverageRatings(
     likedGroups.map((group) => ({ key: group.key, wineIds: group.wines.map((wine) => wine.id) })),
   )
@@ -553,25 +576,60 @@ export function CollectionView({ filters, groupLevels, viewMode, onOpenWine }: C
   }
 
   if (viewMode === 'liked') {
-    if (likedGroups.length === 0) {
+    const ratings = likedRatings ?? {}
+    const groupTotalBottles = (group: NameProducerGroup) =>
+      group.wines.reduce((sum, wine) => sum + (counts[wine.id] ?? 0), 0)
+    // Näkyvissä pysyvät normaalit ryhmät (≥1 pullo) sekä haamu-viinit
+    // (0 pulloa mutta ≥1 arvio) — muut (0 pulloa, ei arviota) piilotetaan,
+    // koska niitä ei koskaan todella "liked"-listattu.
+    const visibleGroups = likedGroups.filter((group) => groupTotalBottles(group) > 0 || ratings[group.key] != null)
+
+    if (visibleGroups.length === 0) {
       return <EmptyCollectionTips />
     }
-    const ratings = likedRatings ?? {}
-    const sortedGroups = sortByRatingDescending(likedGroups, ratings)
+
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '36px' }}>
-        {sortedGroups.map((group) => (
-          <NameGroupBlock
-            key={group.key}
-            group={group}
-            viewMode={viewMode}
-            bottleCounts={counts}
-            averagePrices={prices}
-            truncateName={sortedGroups.length > 1}
-            onOpenWine={onOpenWine}
-            rating={ratings[group.key] ?? null}
-          />
-        ))}
+      <div>
+        {FAVORITE_TIER_SECTIONS.map((section) => {
+          const sectionGroups = sortByRatingDescending(
+            visibleGroups.filter((group) => group.wines[0].favoriteTier === section.tier),
+            ratings,
+          )
+          if (sectionGroups.length === 0) return null
+
+          return (
+            <div key={section.tier ?? 'other'} style={{ marginBottom: '32px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: '12px',
+                  marginBottom: '20px',
+                  paddingBottom: '8px',
+                  borderBottom: `1px solid ${COLORS.line}`,
+                }}
+              >
+                <span style={{ fontSize: '17px', fontWeight: 500, color: COLORS.text }}>{t(section.titleKey)}</span>
+                <span style={{ fontSize: '14px', color: COLORS.textMuted }}>{sectionGroups.length}</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '23px', rowGap: '36px' }}>
+                {sectionGroups.map((group) => (
+                  <NameGroupBlock
+                    key={group.key}
+                    group={group}
+                    viewMode={viewMode}
+                    bottleCounts={counts}
+                    averagePrices={prices}
+                    truncateName={sectionGroups.length > 1}
+                    onOpenWine={onOpenWine}
+                    rating={ratings[group.key] ?? null}
+                    isGhost={groupTotalBottles(group) === 0}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })}
       </div>
     )
   }

@@ -89,6 +89,24 @@ export const en = {
   wine_detail_rating_label: 'Rating',
   wine_detail_price_label: 'Avg. price',
 
+  favorite_tier_aarre: 'Treasure',
+  favorite_tier_timantti: 'Diamond',
+  favorite_tier_legenda: 'Legend',
+  favorite_menu_title: 'Mark as favorite',
+  favorite_remove: 'Remove from favorites',
+
+  wishlist_tier_1: 'On wishlist',
+  wishlist_tier_2: 'Prioritized',
+  wishlist_tier_3: 'On the hunt',
+  wishlist_menu_title: 'Add to wishlist',
+  wishlist_remove: 'Remove from wishlist',
+  wishlist_hint: 'Want to add this to your wishlist?',
+
+  liked_ghost_label: 'No longer in cellar',
+  liked_section_other: 'Other wines',
+
+  collection_surprise_me_link: 'Surprise me',
+
   bottle_add_link: 'Add bottle',
   bottle_status_cellar: 'In cellar',
   bottle_status_consumed: 'Consumed',
