@@ -6,7 +6,7 @@ import { useGroupAverageRating, useGroupAverageRatings } from '../features/tasti
 import { useRegionPhotoManifest, resolveRegionPhotoUrl } from '../features/regions'
 import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
-import { getRegionFallbackColor } from '../shared/regionColors'
+import { getRegionFallbackColor, getCountryFallbackColor } from '../shared/regionColors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
 import { BottleIcon } from '../shared/BottleIcon'
 import { getBottleShape } from '../shared/bottleShapes'
@@ -256,7 +256,8 @@ type RegionPhotoBannerProps = {
 function RegionPhotoBanner({ country, region, manifest, label, totalBottles }: RegionPhotoBannerProps) {
   const t = useTranslation()
   const photoUrl = resolveRegionPhotoUrl(country, region, manifest)
-  const duotoneColor = getRegionFallbackColor(region) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg
+  const duotoneColor =
+    getRegionFallbackColor(region) ?? getCountryFallbackColor(country) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg
 
   return (
     <div
@@ -438,7 +439,7 @@ function GroupBranch(props: GroupBranchProps) {
     // koko kortin tausta — ei vain kuva-alueen — joten sama väri näkyy
     // myös kuvan puuttuessa ja viinilistan takana.
     const cardBackground = country
-      ? (getRegionFallbackColor(node.key) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg)
+      ? (getRegionFallbackColor(node.key) ?? getCountryFallbackColor(country) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg)
       : COLORS.bg
 
     return (

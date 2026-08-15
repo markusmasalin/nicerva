@@ -7,8 +7,10 @@ import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../../../shared/fieldStyles'
 import { useTranslation } from '../../../app/LanguageContext'
 import type { TranslationKey } from '../../../shared/translations'
 import { CountryPicker } from '../../../shared/CountryPicker'
+import { getKnownRegions } from '../../../shared/regions'
+import { normalizeText } from '../../../shared/normalizeText'
 
-const PRODUCER_SEARCH_DEBOUNCE_MS = 300
+const SEARCH_DEBOUNCE_MS = 300
 
 const WINE_TYPES: WineType[] = ['red', 'white', 'rose', 'sparkling', 'dessert', 'fortified']
 
@@ -66,6 +68,8 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   const [producerSuggestions, setProducerSuggestions] = useState<Producer[]>([])
   const [producerSearchComplete, setProducerSearchComplete] = useState(false)
   const [suppressProducerSuggestions, setSuppressProducerSuggestions] = useState(false)
+  const [regionSuggestions, setRegionSuggestions] = useState<string[]>([])
+  const [suppressRegionSuggestions, setSuppressRegionSuggestions] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const hasHiddenFieldValue = Boolean(initial?.appellation || (initial?.grapes.length ?? 0) > 0 || initial?.notes)
@@ -97,12 +101,24 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           setProducerSearchComplete(true)
         }
       }
-    }, PRODUCER_SEARCH_DEBOUNCE_MS)
+    }, SEARCH_DEBOUNCE_MS)
     return () => {
       cancelled = true
       clearTimeout(timer)
     }
   }, [wine.producer, suppressProducerSuggestions])
+
+  useEffect(() => {
+    if (suppressRegionSuggestions || !wine.country || wine.region.trim().length < 2) {
+      setRegionSuggestions([])
+      return
+    }
+    const timer = setTimeout(() => {
+      const query = normalizeText(wine.region)
+      setRegionSuggestions(getKnownRegions(wine.country).filter((region) => normalizeText(region).includes(query)).slice(0, 8))
+    }, SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [wine.region, wine.country, suppressRegionSuggestions])
 
   function selectProducer(producer: Producer) {
     setWine((current) => ({
@@ -121,6 +137,15 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   function handleAddNewProducer() {
     setSuppressProducerSuggestions(true)
     setProducerSuggestions([])
+  }
+
+  // Ei "+ Lisää uutena alueena" -linkkiä kuten tuottajahaulla — region.ts on
+  // kiinteä staattinen data, ei tietokantataulu, joten vapaa kirjoittaminen
+  // ilman valintaa toimii jo suoraan ilman erillistä vahvistusaskelta.
+  function selectRegion(region: string) {
+    setWine((current) => ({ ...current, region }))
+    setSuppressRegionSuggestions(true)
+    setRegionSuggestions([])
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -233,11 +258,43 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         <input
           placeholder={t('wine_region_placeholder')}
           value={wine.region}
-          onChange={(e) => setWine({ ...wine, region: e.target.value })}
+          onChange={(e) => {
+            setWine({ ...wine, region: e.target.value })
+            setSuppressRegionSuggestions(false)
+          }}
           required
           style={FIELD_STYLE}
         />
       </label>
+      {regionSuggestions.length > 0 && (
+        <ul
+          style={{
+            listStyle: 'none',
+            margin: '-8px 0 0',
+            padding: 0,
+            border: `1px solid ${COLORS.line}`,
+            borderRadius: '8px',
+            background: '#FFFFFF',
+            overflow: 'hidden',
+          }}
+        >
+          {regionSuggestions.map((region, index) => (
+            <li
+              key={region}
+              onClick={() => selectRegion(region)}
+              style={{
+                padding: '10px 14px',
+                fontSize: '14px',
+                color: COLORS.text,
+                cursor: 'pointer',
+                borderBottom: index < regionSuggestions.length - 1 ? `1px solid ${COLORS.line}` : 'none',
+              }}
+            >
+              {region}
+            </li>
+          ))}
+        </ul>
+      )}
       <label>
         <div style={FIELD_LABEL_STYLE}>{t('wine_vintage_label')}</div>
         <input
