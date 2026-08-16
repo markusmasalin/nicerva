@@ -8,6 +8,7 @@ import { COLORS } from '../shared/colors'
 import { COUNTRY_FLAG_COLORS } from '../shared/countryFlagColors'
 import { getRegionFallbackColor, getCountryFallbackColor } from '../shared/regionColors'
 import { WINE_TYPE_COLORS } from '../shared/wineTypeColors'
+import { mixWithWhite } from '../shared/mixColor'
 import { BottleIcon } from '../shared/BottleIcon'
 import { getBottleShape } from '../shared/bottleShapes'
 import { useTranslation, useLanguage } from './LanguageContext'
@@ -442,6 +443,17 @@ function GroupBranch(props: GroupBranchProps) {
       ? (getRegionFallbackColor(node.key) ?? getCountryFallbackColor(country) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? COLORS.bg)
       : COLORS.bg
 
+    // Viinilistan oma tausta, erillinen kortin ulkoreunojen cardBackgroundista:
+    // yksi kiinteä, hyvin vaalea sävy koko alueelle (ei per-viini-vaihtelua),
+    // jotta paljon tekstiä sisältävä lista pysyy luettavana bannerin
+    // kylläisemmän duotone-sävyn alla.
+    const regionListBackground = mixWithWhite(
+      country
+        ? (getRegionFallbackColor(node.key) ?? getCountryFallbackColor(country) ?? COUNTRY_FLAG_COLORS[country]?.[0] ?? '#000000')
+        : '#000000',
+      0.80,
+    )
+
     return (
       <div
         style={{
@@ -463,7 +475,7 @@ function GroupBranch(props: GroupBranchProps) {
             totalBottles={node.totalBottles}
           />
         )}
-        <div style={{ padding: '18px' }}>
+        <div style={{ padding: '18px', background: regionListBackground }}>
           <GroupBranchBody {...props} />
         </div>
       </div>

@@ -55,6 +55,9 @@ export const en = {
   wine_purchase_date_label: 'Purchase date',
   wine_more_details_link: '+ Add more details',
   wine_search_online_link: 'Search online',
+  wine_enrich_button: 'Complete details with AI',
+  wine_enrich_loading: 'Completing details...',
+  wine_enrich_error: 'Could not complete the details.',
   wine_save_new: 'Add to collection',
   wine_add_modal_title: 'Add wine',
 
@@ -133,6 +136,9 @@ export const en = {
   tasting_skip_link: 'Skip, just mark as consumed',
 
   identity_modal_title: 'Edit wine',
+  wine_delete_group_link: 'Delete wine completely',
+  wine_delete_group_confirm:
+    'Deleting "{name}" completely: {vintageCount} vintages, {bottleCount} bottles, {tastingCount} tastings. This cannot be undone. Continue?',
 
   duplicate_modal_title: 'Already in your collection',
   duplicate_modal_body: '{name} ({producer}) is already in your collection.',

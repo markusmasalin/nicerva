@@ -86,6 +86,15 @@ export async function deleteWine(id: string): Promise<void> {
   if (error) throw error
 }
 
+// Poistaa KAIKKI name+producer-ryhmän vuosikertarivit kerralla — sama
+// ryhmittelyperiaate kuin updateWineIdentity/updateWineGroupFavoriteTier.
+// bottles/tastings-rivit poistuvat automaattisesti (ON DELETE CASCADE
+// wine_id-vierasavaimella), ei vaadi manuaalista lapsirivien siivousta.
+export async function deleteWineGroup(name: string, producer: string): Promise<void> {
+  const { error } = await supabase.from('wines').delete().ilike('name', name.trim()).ilike('producer', producer.trim())
+  if (error) throw error
+}
+
 export async function uploadLabelImage(name: string, producer: string, file: File): Promise<string> {
   const trimmedName = name.trim()
   const trimmedProducer = producer.trim()
@@ -276,4 +285,46 @@ async function applyKnownProducer(result: IdentifyWineResult): Promise<IdentifyW
       region: result.wine.region ?? match.region,
     },
   }
+}
+
+export type EnrichWineInput = {
+  name: string
+  producer: string
+  vintage?: number | null
+  country?: string | null
+  region?: string | null
+  appellation?: string | null
+}
+
+export type EnrichWineResult = {
+  wine: IdentifiedWine
+}
+
+// Tekstipohjainen täydennys (Vaihe 2) — kutsutaan käyttäjän pyynnöstä kun
+// lomake on jo esitäytetty (skannauksesta tai käsin kirjoitetusta nimestä),
+// mutta osa keskeisistä kentistä on vielä tyhjiä. Ei kuvaa, pelkkä tekstiprompti
+// jo tiedossa olevista kentistä Sonnet-mallille.
+export async function enrichWine(input: EnrichWineInput): Promise<EnrichWineResult> {
+  const payload: Record<string, unknown> = { name: input.name, producer: input.producer }
+  if (input.vintage != null) payload.vintage = input.vintage
+  if (input.country) payload.country = input.country
+  if (input.region) payload.region = input.region
+  if (input.appellation) payload.appellation = input.appellation
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/enrich-wine`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) throw new Error('Viinin tietojen täydennys epäonnistui.')
+
+  return response.json()
 }

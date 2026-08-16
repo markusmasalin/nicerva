@@ -83,3 +83,19 @@ export async function getGroupAverageRating(wineIds: string[]): Promise<number |
 
   return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 }
+
+// Koko name+producer-ryhmän maisteluiden LUKUMÄÄRÄ (ei keskiarvo) — sama
+// kysely kuin getGroupAverageRating, mutta laskee rivit sen sijaan että
+// keskiarvoistaisi arvosanat. Käytetään esim. viinin kokonaispoiston
+// vahvistusviestissä.
+export async function getGroupTastingCount(wineIds: string[]): Promise<number> {
+  if (wineIds.length === 0) return 0
+
+  const { count, error } = await supabase
+    .from('tastings')
+    .select('*', { count: 'exact', head: true })
+    .in('wine_id', wineIds)
+  if (error) throw error
+
+  return count ?? 0
+}

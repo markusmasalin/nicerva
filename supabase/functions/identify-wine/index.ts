@@ -19,7 +19,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PROMPT = `You are looking at a photo of a wine label. Extract as much information as you can about the wine and every piece of text visible on the label.
+const PROMPT = `You are looking at a photo of a wine label. Read exactly what is printed on the label — do not infer, complete, or guess anything that is not visibly printed.
 
 You may receive one or two images: the front label and optionally the back label of the same wine bottle. Combine information from both — the back label often contains the vintage or grape composition when the front doesn't.
 
@@ -40,11 +40,15 @@ Return exactly this JSON structure and nothing else:
   "detectedText": string[]
 }
 
+"name", "producer" and "vintage" should be filled in whenever they are printed on the label.
+
+"country", "region", "appellation", "type" and "grapes" must be filled in ONLY when they are explicitly and legibly printed on the label itself (including cases where a printed appellation name unambiguously implies the country/region, e.g. "Chianti" or "Rioja"). Do not infer "type" from the visual color of the wine or the bottle shape — only from printed text such as "Rosso", "Blanc", "Rosé", "Spumante", or an appellation that is exclusively one type. Do not infer or complete information that is not visibly printed on the label — leave those fields empty rather than guessing.
+
 "detectedText" must contain every piece of raw text you can read on the label, one entry per line or fragment, regardless of whether you could map it into the "wine" fields.
 
-Return region in Finnish (e.g. "Toscana" not "Tuscany" if there's a natural Finnish form, otherwise use the original name).
+Return region in Finnish (e.g. "Toscana" not "Tuscany" if there's a natural Finnish form, otherwise use the original name) — only when the region is actually printed on the label.
 
-The "country" field should be a two-letter ISO 3166-1 alpha-2 code (e.g. "IT" for Italy, "FR" for France, "ES" for Spain, "DE" for Germany, "US" for United States), not a country name in any language.
+The "country" field should be a two-letter ISO 3166-1 alpha-2 code (e.g. "IT" for Italy, "FR" for France, "ES" for Spain, "DE" for Germany, "US" for United States), not a country name in any language — only when the country, or an unambiguous printed indication of it, appears on the label.
 
 Return ONLY valid JSON. Do not wrap the response in markdown. Do not include explanations, notes or surrounding text.`;
 

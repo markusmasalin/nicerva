@@ -5,6 +5,7 @@ export {
   useAverageRatingsByWine,
   useGroupAverageRating,
   useGroupAverageRatings,
+  useGroupTastingCount,
   useCreateTasting,
   useTastingsForWine,
   useDeleteTasting,

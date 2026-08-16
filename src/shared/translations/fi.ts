@@ -55,6 +55,9 @@ export const fi = {
   wine_purchase_date_label: 'Ostopäivä',
   wine_more_details_link: '+ Lisää tarkempia tietoja',
   wine_search_online_link: 'Etsi verkosta',
+  wine_enrich_button: 'Täydennä tiedot tekoälyllä',
+  wine_enrich_loading: 'Täydennetään tietoja...',
+  wine_enrich_error: 'Tietojen täydennys epäonnistui.',
   wine_save_new: 'Lisää kokoelmaan',
   wine_add_modal_title: 'Lisää viini',
 
@@ -133,6 +136,9 @@ export const fi = {
   tasting_skip_link: 'Ohita, merkitse vain juoduksi',
 
   identity_modal_title: 'Muokkaa viiniä',
+  wine_delete_group_link: 'Poista viini kokonaan',
+  wine_delete_group_confirm:
+    'Poistetaan "{name}" kokonaan: {vintageCount} vuosikertaa, {bottleCount} pulloa, {tastingCount} arviota. Tätä ei voi perua. Jatketaanko?',
 
   duplicate_modal_title: 'Löytyi jo kokoelmastasi',
   duplicate_modal_body: '{name} ({producer}) on jo kokoelmassasi.',

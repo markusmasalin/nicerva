@@ -14,6 +14,7 @@ import { BottleManager, useBottleCounts, useAveragePrices } from '../features/in
 import {
   useAverageRatingsByWine,
   useGroupAverageRating,
+  useGroupTastingCount,
   useTastingsForWine,
   useDeleteTasting,
 } from '../features/tastings'
@@ -366,9 +367,14 @@ export function WineDetailModal({ identity, onClose }: Props) {
   }
 
   useEffect(() => {
+    // closest() kävelee DOM-puuta ylöspäin todellisen renderöintirakenteen
+    // mukaan, ei React-komponenttihierarkian — tunnistaa siis myös
+    // Portal-rakenteen kautta avautuvien lapsimodaalien (Modal.tsx) oman
+    // sisällön omakseen, toisin kuin contentRef.current?.contains() teki.
     const preventScroll = (e: Event) => {
-      if (contentRef.current?.contains(e.target as Node)) {
-        return // sallitaan vieritys kortin oman sisällön sisällä
+      const target = e.target as HTMLElement
+      if (target.closest('.scrollable-modal-content')) {
+        return // sallitaan vieritys minkä tahansa modaalin omassa sisällössä
       }
       e.preventDefault()
     }
@@ -388,6 +394,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
 
   const { data: averageRatings = {} } = useAverageRatingsByWine()
   const { data: groupAverageRating } = useGroupAverageRating(wineGroup.map((wine) => wine.id))
+  const { data: groupTastingCount } = useGroupTastingCount(wineGroup.map((wine) => wine.id))
 
   if (wineGroup.length === 0) {
     return null
@@ -461,7 +468,7 @@ export function WineDetailModal({ identity, onClose }: Props) {
         <div
           ref={contentRef}
           onClick={(e) => e.stopPropagation()}
-          className="modal-panel"
+          className="modal-panel scrollable-modal-content"
           style={{
             background: COLORS.bg,
             color: COLORS.text,
@@ -707,7 +714,14 @@ export function WineDetailModal({ identity, onClose }: Props) {
             type: first.type,
             labelImageUrl: first.labelImageUrl,
           }}
+          vintageCount={wineGroup.length}
+          bottleCount={totalBottleCount}
+          tastingCount={groupTastingCount ?? 0}
           onClose={() => setShowIdentityModal(false)}
+          onDeleted={() => {
+            setShowIdentityModal(false)
+            onClose()
+          }}
         />
       )}
 

@@ -5,13 +5,15 @@ export { useWines, useWine, useCreateWine, useUpdateWine, useDeleteWine } from '
 export {
   uploadLabelImage,
   identifyWine,
+  enrichWine,
   updateWineIdentity,
   updateWineGroupFavoriteTier,
   updateWineGroupWishlistTier,
   updateWineFavoriteTier,
   updateWineWishlistTier,
+  deleteWineGroup,
 } from './api'
-export type { IdentifiedWine, IdentifyWineResult, WineIdentityUpdate } from './api'
+export type { IdentifiedWine, IdentifyWineResult, EnrichWineInput, EnrichWineResult, WineIdentityUpdate } from './api'
 export { WineList } from './components/WineList'
 export { WineForm } from './components/WineForm'
 export type { PurchaseInfo } from './components/WineForm'

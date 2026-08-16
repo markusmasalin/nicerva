@@ -55,6 +55,9 @@ export const it = {
   wine_purchase_date_label: 'Data di acquisto',
   wine_more_details_link: '+ Aggiungi dettagli',
   wine_search_online_link: 'Cerca online',
+  wine_enrich_button: "Completa i dettagli con l'IA",
+  wine_enrich_loading: 'Completamento dettagli...',
+  wine_enrich_error: 'Impossibile completare i dettagli.',
   wine_save_new: 'Aggiungi alla collezione',
   wine_add_modal_title: 'Aggiungi vino',
 
@@ -133,6 +136,9 @@ export const it = {
   tasting_skip_link: 'Salta, segna solo come consumata',
 
   identity_modal_title: 'Modifica vino',
+  wine_delete_group_link: 'Elimina completamente il vino',
+  wine_delete_group_confirm:
+    'Eliminazione completa di "{name}": {vintageCount} annate, {bottleCount} bottiglie, {tastingCount} degustazioni. Questa azione non può essere annullata. Continuare?',
 
   duplicate_modal_title: 'Già nella tua collezione',
   duplicate_modal_body: '{name} ({producer}) è già nella tua collezione.',

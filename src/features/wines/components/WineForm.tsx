@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { NewWine, WineType } from '../types'
+import { enrichWine } from '../api'
 import { searchProducers } from '../../producers'
 import type { Producer } from '../../producers'
 import { COLORS } from '../../../shared/colors'
@@ -65,6 +66,7 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [enriching, setEnriching] = useState(false)
   const [producerSuggestions, setProducerSuggestions] = useState<Producer[]>([])
   const [producerSearchComplete, setProducerSearchComplete] = useState(false)
   const [suppressProducerSuggestions, setSuppressProducerSuggestions] = useState(false)
@@ -174,8 +176,49 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
     `${wine.name} ${wine.producer} ${wine.vintage ?? ''} grapes`,
   )}`
 
+  const currentGrapes = grapesInput
+    .split(',')
+    .map((g) => g.trim())
+    .filter(Boolean)
+
+  // "type" ei koskaan ole tyhjä tässä lomakkeessa (select oletusarvoineen
+  // 'red'), joten sitä ei voi luotettavasti erottaa käyttäjän valinnasta —
+  // nappi näytetään siis alue/rypäle-kenttien perusteella, eikä täydennys
+  // koskaan ylikirjoita type-kenttää (ks. handleEnrich).
+  const showEnrichButton =
+    wine.name.trim() !== '' && wine.producer.trim() !== '' && (wine.region.trim() === '' || currentGrapes.length === 0)
+
+  async function handleEnrich() {
+    setEnriching(true)
+    try {
+      const result = await enrichWine({
+        name: wine.name,
+        producer: wine.producer,
+        vintage: wine.vintage,
+        country: wine.country || null,
+        region: wine.region || null,
+        appellation: wine.appellation,
+      })
+      const enriched = result.wine
+      setWine((current) => ({
+        ...current,
+        country: current.country || enriched.country || '',
+        region: current.region || enriched.region || '',
+        appellation: current.appellation || enriched.appellation,
+      }))
+      if (currentGrapes.length === 0 && enriched.grapes && enriched.grapes.length > 0) {
+        setGrapesInput(enriched.grapes.join(', '))
+      }
+    } catch {
+      alert(t('wine_enrich_error'))
+    } finally {
+      setEnriching(false)
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <label>
         <div style={FIELD_LABEL_STYLE}>{t('wine_name_label')}</div>
         <input
@@ -320,6 +363,12 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
         </select>
       </label>
 
+      {showEnrichButton && (
+        <button type="button" onClick={handleEnrich} disabled={enriching} style={{ ...buttonStyle, opacity: enriching ? 0.6 : 1 }}>
+          {t('wine_enrich_button')}
+        </button>
+      )}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -434,6 +483,54 @@ export function WineForm({ initial, isEditing, onSubmit, onCancel }: Props) {
           </button>
         )}
       </div>
-    </form>
+      </form>
+
+      {enriching && (
+        <>
+          <style>{`
+            @keyframes wine-enrich-spinner-spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 200,
+              padding: '16px',
+            }}
+          >
+            <div
+              style={{
+                background: COLORS.bg,
+                color: COLORS.text,
+                borderRadius: '12px',
+                padding: '32px 40px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px',
+              }}
+            >
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  border: `3px solid ${COLORS.line}`,
+                  borderTopColor: COLORS.wineRed,
+                  animation: 'wine-enrich-spinner-spin 0.8s linear infinite',
+                }}
+              />
+              <span style={{ color: COLORS.text, fontSize: '17px' }}>{t('wine_enrich_loading')}</span>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   )
 }

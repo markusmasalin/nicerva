@@ -56,7 +56,7 @@ export function Modal({ title, onClose, children }: Props) {
 
   return createPortal(
     <div onClick={onClose} style={overlayStyle}>
-      <div onClick={(e) => e.stopPropagation()} style={cardStyle}>
+      <div onClick={(e) => e.stopPropagation()} className="scrollable-modal-content" style={cardStyle}>
         <span onClick={onClose} style={{ color: COLORS.textMuted, fontSize: '13px', cursor: 'pointer' }}>
           ← {t('common_back')}
         </span>

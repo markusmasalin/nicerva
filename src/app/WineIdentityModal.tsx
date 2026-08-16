@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent, type CSSProperties, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { updateWineIdentity, uploadLabelImage } from '../features/wines'
+import { updateWineIdentity, uploadLabelImage, deleteWineGroup } from '../features/wines'
 import type { WineType } from '../features/wines'
 import { Modal } from '../shared/Modal'
 import { FIELD_STYLE, FIELD_LABEL_STYLE } from '../shared/fieldStyles'
@@ -37,7 +37,14 @@ type InitialValues = {
 type Props = {
   identity: Identity
   initialValues: InitialValues
+  vintageCount: number
+  bottleCount: number
+  tastingCount: number
   onClose: () => void
+  // Kutsutaan onnistuneen koko ryhmän poiston jälkeen — viiniä ei enää ole
+  // olemassa, joten sekä tämä että WineDetailModal suljetaan ja palataan
+  // suoraan kokoelmanäkymään.
+  onDeleted: () => void
 }
 
 const buttonStyle: CSSProperties = {
@@ -49,7 +56,24 @@ const buttonStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
+// Sama ääriviiva-tyyli kuin Tallenna/Peruuta (kumpikin jo käyttää
+// identtistä buttonStyle:ä keskenään, ei täytettyä vs. ääriviivattua
+// eroa niiden välillä) — ainoa ero on COLORS.wineRed reunukselle/tekstille.
+const deleteButtonStyle: CSSProperties = {
+  ...buttonStyle,
+  border: `0.5px solid ${COLORS.wineRed}`,
+  color: COLORS.wineRed,
+}
+
+export function WineIdentityModal({
+  identity,
+  initialValues,
+  vintageCount,
+  bottleCount,
+  tastingCount,
+  onClose,
+  onDeleted,
+}: Props) {
   const t = useTranslation()
   const [name, setName] = useState(initialValues.name)
   const [producer, setProducer] = useState(initialValues.producer)
@@ -59,6 +83,7 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
   const [type, setType] = useState<WineType>(initialValues.type)
   const [labelImageUrl, setLabelImageUrl] = useState(initialValues.labelImageUrl)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
@@ -96,6 +121,25 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
     } catch {
       alert('Viinin tietojen tallennus epäonnistui.')
       setSaving(false)
+    }
+  }
+
+  async function handleDeleteGroup() {
+    const message = t('wine_delete_group_confirm')
+      .replace('{name}', identity.name)
+      .replace('{vintageCount}', String(vintageCount))
+      .replace('{bottleCount}', String(bottleCount))
+      .replace('{tastingCount}', String(tastingCount))
+    if (!window.confirm(message)) return
+
+    setDeleting(true)
+    try {
+      await deleteWineGroup(identity.name, identity.producer)
+      queryClient.invalidateQueries({ queryKey: ['wines'] })
+      onDeleted()
+    } catch {
+      alert('Viinin poisto epäonnistui.')
+      setDeleting(false)
     }
   }
 
@@ -175,6 +219,14 @@ export function WineIdentityModal({ identity, initialValues, onClose }: Props) {
         <div style={{ display: 'flex', gap: '12px' }}>
           <button type="submit" disabled={saving} style={{ ...buttonStyle, opacity: saving ? 0.6 : 1 }}>
             {saving ? t('common_saving') : t('common_save')}
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteGroup}
+            disabled={deleting}
+            style={{ ...deleteButtonStyle, opacity: deleting ? 0.6 : 1 }}
+          >
+            {t('wine_delete_group_link')}
           </button>
           <button type="button" onClick={onClose} style={buttonStyle}>
             {t('common_cancel')}

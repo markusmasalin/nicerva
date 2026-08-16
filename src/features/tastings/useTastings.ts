@@ -32,6 +32,14 @@ export function useGroupAverageRatings(groups: { key: string; wineIds: string[] 
   })
 }
 
+export function useGroupTastingCount(wineIds: string[]) {
+  return useQuery({
+    queryKey: ['tastings', 'group-count', ...wineIds],
+    queryFn: () => api.getGroupTastingCount(wineIds),
+    enabled: wineIds.length > 0,
+  })
+}
+
 export function useCreateTasting() {
   const queryClient = useQueryClient()
   return useMutation({
